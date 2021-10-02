@@ -4,6 +4,9 @@
   font-family: 'Nunito';
 }
 
+body{
+  background-color: #212529 !important;
+}
 
 .navItemHolder .btn-light{
   transition: 0.5s !important;
@@ -31,6 +34,9 @@
   top: 0px;
   width: 280px;
   z-index: 2000 !important;
+  overflow-y: scroll;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 @media only screen and (max-width: 577px){
     #sidebar{

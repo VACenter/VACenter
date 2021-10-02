@@ -1,4 +1,4 @@
-<div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark h-100 position-fixed">
+<div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark h-100 position-fixed" style="overflow-y: scroll;">
     <a class="d-flex align-items-center mb-3 w-100 mb-md-0 me-md-auto text-white text-decoration-none">
         <img class="me-2" style="height: 2em;" src="<%= config.other.logo%>">
         <span class="fs-4"><%= config.name%></span>
@@ -151,5 +151,14 @@
             state = true;
             sidebar.style.left = '0px';
         }
+    }
+    var resizeId;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeId);
+        resizeId = setTimeout(doneResizing, 500);
+    });
+
+    function doneResizing() {
+        window.location.reload();
     }
 </script>
