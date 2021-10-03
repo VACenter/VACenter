@@ -37,11 +37,12 @@ body{
   overflow-y: scroll;
   padding-top: 20px;
   padding-bottom: 20px;
+  transition: 0.50s;
 }
 @media only screen and (max-width: 577px){
     #sidebar{
         width: 100vw !important;
-        left: -1500px;
+        left: 150vw;
     }
     #content{
         padding-left: 15px !important;

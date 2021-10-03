@@ -141,12 +141,12 @@
     const sidebar = document.getElementById('sidebar');
     console.log(document.body.clientWidth)
     if(document.body.clientWidth <= 577){
-        sidebar.setAttribute('style', 'left: -1500px');
+        sidebar.setAttribute('style', 'left: 150vw');
     }
     function toggleSidebar() {
         if (state == true) {
             state = false;
-            sidebar.style.left = '-1500px'
+            sidebar.style.left = '150vw'
         } else if (state == false) {
             state = true;
             sidebar.style.left = '0px';
@@ -157,8 +157,10 @@
         clearTimeout(resizeId);
         resizeId = setTimeout(doneResizing, 500);
     });
-
+    let startWidth = window.innerWidth;
     function doneResizing() {
-        window.location.reload();
+        if(window.innerWidth != startWidth){
+            window.location.reload();
+        }
     }
 </script>
