@@ -522,7 +522,7 @@ function CreateUser(username, rank, manualRank, admin, password, display, profil
  * @param {0|1} manualRank - Manual Ranked user
  * @returns {Promise<Boolean>} Returns boolean of query
  */
- function UpdateUser(username, rank, admin, password, display, profileURL, hours, created, llogin, cp, revoked, VANetID, manualRank) {
+ function UpdateUser(username, rank, admin, password, display, profileURL, hours, created, llogin, cp, revoked, VANetID, manualRank = 0) {
     return new Promise((resolve, error) => {
         db.run(`UPDATE users SET
                 rank = ?,
