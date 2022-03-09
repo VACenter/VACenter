@@ -1,0 +1,15 @@
+{
+    "database": {
+
+    },
+    "instance": {
+        "port": 3000,
+        "setup": false
+    },
+    "vaInfo": {
+        "name": "VACenter"
+    },
+    "customizations": {
+        "bg": "https://webcdn.infiniteflight.com/blog/content/images/2021/04/a350-10year.jpg"
+    }
+}
