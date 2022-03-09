@@ -56,43 +56,47 @@
             <div class="row w-100 mx-0 gy-2 gx-0 g-md-3 row-cols-md-2 row-cols-sm-1 checkHeight">
                 <div class="col">
                     <div class="w-100 h-100 shadow p-2 rounded border border-secondary border-1">
-                        
-                        <table data-toggle="table" data-search="true" data-show-columns="true" id="mainTable">
-                            <thead>
-                                <tr class="tr-class-2">
-                                    <th data-field="username">Username</th>
-                                    <th data-field="rank">Rank</th>
-                                    <th data-field="hours">Flight Hours</th>
-                                    <th data-field="admin">Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% users.forEach(pilot=>{%>
-                                    <tr id="tr-id-<%=pilot.username%>" class="tr-class-<%=pilot.username%> pirepClickable" data-title="<%=pilot.username%>"
-                                        title="<%= pilot.username%>" data-object='{"key": "value"}' style="cursor: pointer;"
-                                        onclick="openUser('<%=pilot.username%>')">
-                                        <td id="td-id-<%=pilot.username %>" class="td-class-<%=pilot.username %>" data-title="<%= pilot.username%>">
-                                            <strong>
-                                                <%= config.code%><%= pilot.username%>
-                                            </strong>
-                                        </td>
-                                        <td data-text="<%= pilot.rank %>">
-                                            <%= pilot.rank %>
-                                        </td>
-                                        <td data-text="<%= pilot.hours %>">
-                                            <%= pilot.hours %>
-                                        </td>
-                                        <td data-text="<%= (pilot.admin == 1 ? true : false)  ? "True" : "False" %>">
-                                            <% if(pilot.admin) { %>
-                                                <span class="badge bg-success">Yes</span>
-                                            <%}else{%>
-                                                <span class="badge bg-danger">No</span>
-                                            <%}%>
-                                        </td>
+                        <div class="table-responsive h-100">
+                            <table data-toggle="table" data-search="true" data-show-columns="true" id="mainTable">
+                                <thead>
+                                    <tr class="tr-class-2">
+                                        <th data-field="username">Username</th>
+                                        <th data-field="rank">Rank</th>
+                                        <th data-field="hours">Flight Hours</th>
+                                        <th data-field="admin">Admin</th>
                                     </tr>
-                                <%})%>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <% users.forEach(pilot=>{%>
+                                        <tr id="tr-id-<%=pilot.username%>" class="tr-class-<%=pilot.username%> pirepClickable"
+                                            data-title="<%=pilot.username%>" title="<%= pilot.username%>" data-object='{"key": "value"}'
+                                            style="cursor: pointer;" onclick="openUser('<%=pilot.username%>')">
+                                            <td id="td-id-<%=pilot.username %>" class="td-class-<%=pilot.username %>"
+                                                data-title="<%= pilot.username%>">
+                                                <strong>
+                                                    <%= config.code%>
+                                                        <%= pilot.username%>
+                                                </strong>
+                                            </td>
+                                            <td data-text="<%= pilot.rank %>">
+                                                <%= pilot.rank %>
+                                            </td>
+                                            <td data-text="<%= pilot.hours %>">
+                                                <%= pilot.hours %>
+                                            </td>
+                                            <td data-text="<%= (pilot.admin == 1 ? true : false)  ? " True" : "False" %>">
+                                                <% if(pilot.admin) { %>
+                                                    <span class="badge bg-success">Yes</span>
+                                                    <%}else{%>
+                                                        <span class="badge bg-danger">No</span>
+                                                        <%}%>
+                                            </td>
+                                        </tr>
+                                        <%})%>
+                                </tbody>
+                            </table>
+                        </div>
+                        
                     </div>
                 </div>
                 <div class="col">
