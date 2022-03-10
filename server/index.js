@@ -15,6 +15,7 @@ const readyForUse = config.get().instance.setup;
 //App
 const app = express();
 app.set('view engine', 'ejs');
+app.set("views", path.join(__dirname, "../", 'output'))
 app.engine('html', require('ejs').renderFile);
 const serverPort = config.get().instance.port;
 app.listen(serverPort, ()=>{
@@ -31,18 +32,19 @@ app.get("*", (req,res, next)=>{
             res.sendStatus(404);
         }
     }else{
-        try{
-            if(req.path == "/"){
-                let NFPage = require(path.join(__dirname, "routes", "index.js"));
-                NFPage.handle(req, res, next, currentConfig);
-            }else{
-                let NFPage = require(path.join(__dirname, "routes", req.path.slice(1, req.path.length) + ".js"));
-                NFPage.handle(req, res, next, currentConfig);
-            }
-            
-        }catch(err){
-            let NFPage = require(path.join(__dirname, 'routes', '404.js'));
-            NFPage.handle(req,res,next, currentConfig);
+        switch(req.path){
+            case "/":
+                res.render("login.html", {
+                    va: currentConfig.vaInfo,
+                    bg: currentConfig.customizations.bg
+                });
+                break;
+            default:
+                res.render("404.html", {
+                    va: currentConfig.vaInfo,
+                    bg: currentConfig.customizations.bg
+                });
+                break;
         }
     }
 })
