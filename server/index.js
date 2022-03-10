@@ -39,6 +39,12 @@ app.get("*", (req,res, next)=>{
                     bg: currentConfig.customizations.bg
                 });
                 break;
+            case "/home":
+                res.render("home.html", {
+                    va: currentConfig.vaInfo,
+                    bg: currentConfig.customizations.bg
+                });
+                break;
             default:
                 res.render("404.html", {
                     va: currentConfig.vaInfo,
