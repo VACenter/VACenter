@@ -1,0 +1,31 @@
+{
+  "name": "vacenter",
+  "version": "4.0.0",
+  "description": "A revolutionary crew center",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "nodemon server/index.js",
+    "start": "pm2 start server --name VACenter"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vacenter/vacenter.git"
+  },
+  "keywords": [
+    "CC",
+    "VACenter",
+    "VAWeb"
+  ],
+  "author": "VACenter",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vacenter/vacenter/issues"
+  },
+  "homepage": "https://github.com/vacenter/vacenter#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "ejs": "^3.1.6",
+    "express": "^4.17.3",
+    "request": "^2.88.2"
+  }
+}

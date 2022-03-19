@@ -1,0 +1,21 @@
+{
+    "database": {
+        "host": null,
+        "port": null,
+        "username": null,
+        "password": null,
+        "database": null
+    },
+    "instance":{
+        "port": 3000,
+        "hosting": false
+    },
+    "vaInfo": {
+        "name": "",
+        "code": "",
+        "logo": ""
+    },
+    "customisation":{
+        "bg": "https://webcdn.infiniteflight.com/blog/content/images/2021/04/a350-10year.jpg"
+    }
+}
