@@ -1,21 +1,22 @@
 {
-    "database": {
-        "host": null,
-        "port": null,
-        "username": null,
-        "password": null,
-        "database": null
-    },
-    "instance":{
-        "port": 3000,
-        "hosting": false
-    },
-    "vaInfo": {
-        "name": "",
-        "code": "",
-        "logo": ""
-    },
-    "customisation":{
-        "bg": "https://webcdn.infiniteflight.com/blog/content/images/2021/04/a350-10year.jpg"
-    }
+  "database": {
+    "host": "http://127.0.0.1",
+    "port": 3306,
+    "username": "vacenter",
+    "password": "vacenter",
+    "database": "vacenter"
+  },
+  "instance": {
+    "port": 3000,
+    "hosting": false,
+    "analytics": false
+  },
+  "vaInfo": {
+    "name": "",
+    "code": "",
+    "logo": ""
+  },
+  "customisation": {
+    "bg": "https://webcdn.infiniteflight.com/blog/content/images/2021/04/a350-10year.jpg"
+  }
 }

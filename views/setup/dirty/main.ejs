@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VACenter 4 Setup</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&display=swap');
+        *{
+            font-family: "Open Sans", "Arial";
+        }
+        label{
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body style="padding: 15px;">
+    <div style="width: 100%; text-align: center;">
+        <img src="https://va-center.com/public/images/logo.webp" width="100">
+        <h1>VACenter 4 Setup (Phase I)</h1>
+        <p>Welcome to VACenter 4! Since this is a manual installation, we require the details for your MySQL database. Please enter them in the form below.</p>
+    </div>
+    <form action="/api/dirtySetup" method="POST">
+        <h3>Database Details Form</h3>
+        <label>
+            Host:<br>
+            <input type="url" name="host" required placeholder="http://127.0.0.1" style="border: 1px solid grey;">
+        </label><br><br>
+        <label>
+            Port:<br>
+            <input type="number" name="port" required placeholder="3306" style="border: 1px solid grey;">
+        </label><br><br>
+        <label>
+            Username:<br>
+            <input type="text" name="username" required placeholder="vacenter" style="border: 1px solid grey;">
+        </label><br><br>
+        <label>
+            Password:<br>
+            <input type="password" name="password" required style="border: 1px solid grey;">
+        </label><br><br>
+        <label>
+            Database:<br>
+            <input type="text" name="database" placeholder="vacenter" required style="border: 1px solid grey;">
+        </label><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

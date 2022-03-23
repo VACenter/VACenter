@@ -18,7 +18,7 @@ function getConfig() {
 
 //Update Config
 function updateConfig(config) {
-    fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(config));
+    fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(config, null, 2));
     recache = true;
     eventEmit.emit("configChange");
 }

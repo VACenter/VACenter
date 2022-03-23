@@ -1,0 +1,87 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup | VACenter 4</title>
+    <%- include('../../components/head')%>
+    <link rel="stylesheet" href="/public/styles/normalSetup.css">
+</head>
+<body class="d-flex h-100 text-center text-white bg-dark" style="background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('/public/images/setupCover.jpg'); background-size: cover; background-position: center;">
+
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="mb-auto">
+            <div>
+                <h3 class="float-md-start mb-0">VACenter 4</h3>
+                <nav class="nav nav-masthead justify-content-center float-md-end">
+                    <a class="nav-link active" aria-current="page" href="#">Setup</a>
+                    <a class="nav-link" onclick="window.location.reload();">Restart</a>
+                </nav>
+            </div>
+        </header>
+
+        <main id="setupWelcome" class="p-3 p-md-5 text-dark bg-light rounded">
+            <img class="mx-auto d-none d-md-block rounded-circle shadow border-2 border-light border" src="https://va-center.com/public/images/logo.webp" height="100" style="margin-top: -95px; z-index: 100px;">
+            <img class="mx-auto d-inline-block d-md-none rounded-circle shadow border-2 border-light border" src="https://va-center.com/public/images/logo.webp" height="75" style="margin-bottom: 15px;">
+            <h1>VACenter 4</h1>
+            <p class="lead">To set up the installation of VACenter, click "Begin Setup".</p>
+            <p class="lead">
+                <button onclick="nextPage()" class="btn btn-lg btn-dark fw-bold">Begin Setup</button>
+            </p>
+        </main>
+        <main id="analyticsSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
+            <span class="display-1"><i class="bi bi-bar-chart-fill text-primary"></i></span>
+            <h1>Analytics</h1>
+            <p class="lead">Allow VACenter to improve your experience. Analytics are only shared with VACenter and never shared with any third party.</p>
+            <p class="lead">
+                <button onclick="analytics(false);" class="btn btn-lg btn-secondary text-light">Deny</button>
+                <button onclick="analytics(true);" class="btn btn-lg btn-dark fw-bold">Allow</button>
+            </p>
+        </main>
+        <main id="nameSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
+            <span class="display-1"><i class="bi bi-fonts text-primary"></i></span>
+            <h1>VA Name</h1>
+            <p class="lead">The name of your virtual airline.</p>
+            <p class="lead">
+                <input class="form-control border border-secondary" type="text" id="setupInputName"><br>
+                <button onclick="setName();" class="btn btn-lg btn-dark fw-bold">Continue</button>
+            </p>
+        </main>
+        <main id="codeSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
+            <span class="display-1"><i class="bi bi-type text-primary"></i></span>
+            <h1>VA Code</h1>
+            <p class="lead">The airline ICAO code of your virtual airline.</p>
+            <p class="lead">
+                <input placeholder="VACV" class="form-control border border-secondary" type="text" id="setupInputCode" minlength="4" maxlength="4" required><br>
+                <button onclick="setCode();" class="btn btn-lg btn-dark fw-bold">Continue</button>
+            </p>
+        </main>
+        <main id="defaultAccountSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
+            <span class="display-1"><i class="bi bi-person-circle text-primary"></i></span>
+            <h1>Default Account</h1>
+            <p class="lead">Information for the default VACenter account.</p>        
+            <p class="lead">
+                <label>Pilot ID</label>
+                <input class="form-control border border-secondary" type="text" id="setupInputUserID" value="" disabled><br>
+                <label>Password</label>
+                <input class="form-control border border-secondary" type="password" id="setupInputUserPassword"><br>
+                <button onclick="setUser();" class="btn btn-lg btn-dark fw-bold">Continue</button>
+            </p>
+        </main>
+        <main id="finalSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
+            <span class="display-1"><i class="bi bi-check-circle text-success"></i></span>
+            <h1>Setup Complete</h1>
+            <p class="lead">VACenter setup is complete! Click "Setup" to enter VACenter.</p>
+            <p class="lead">
+                <button onclick="setup();" class="btn btn-lg btn-dark fw-bold">Setup</button>
+            </p>
+        </main>
+
+        <footer class="mt-auto text-white-50">
+            <p>Powered by VACenter v4.0.0</p>
+        </footer>
+    </div>
+    <%- include('../../components/scripts')%>
+    <script src="/public/scripts/normalSetup.js"></script>
+</body>
+</html>
