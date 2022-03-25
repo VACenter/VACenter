@@ -1,0 +1,352 @@
+{
+	"users": {
+		"fields":  {
+			"pilotID": {
+				"type": "varchar(5)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"name": {
+				"type": "varchar(1024)",
+				"flags": "",
+				"default": "''"
+			},
+			"password": {
+				"type": "varchar(7000)",
+				"flags": "",
+				"default": null
+			},
+			"profilePicture": {
+				"type": "longtext",
+				"flags": "",
+				"default": null
+			},
+			"rank": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"vanetID": {
+				"type": "varchar(1024)",
+				"flags": "",
+				"default":null
+			},
+			"permissions": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"changePWD": {
+				"type": "tinyint",
+				"flags": "NOT NULL",
+				"default": 1
+			},
+			"revoked": {
+				"type": "tinyint",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"meta": {
+				"type": "varchar(7000)",
+				"flags": "NOT NULL",
+				"default": "'{seen: null, created: null}'"
+			}
+		},
+		"pk": "pilotID"
+	},
+	"routes": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"routeNumber": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"departureICAO": {
+				"type": "varchar(4)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"arrivalICAO": {
+				"type": "varchar(4)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"aircrafts": {
+				"type": "varchar(10000)",
+				"flags": "NOT NULL",
+				"default": "'[]'"
+			},
+			"flightTime": {
+				"type": "bigint",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"minHours": {
+				"type": "float",
+				"flags": "NOT NULL",
+				"default": 0
+			}
+		},
+		"pk": "id"
+	},
+	"aircraft": {
+		"fields": {
+			"liveryID": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"aircraftID": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"liveryName": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"aircraftName": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			}
+		},
+		"pk": "liveryID"
+	},
+	"events": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"title": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"message": {
+				"type": "longtext",
+				"flags": "",
+				"default": null
+			},
+			"depICAO": {
+				"type": "varchar(4)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"arrICAO": {
+				"type": "varchar(4)",
+				"flags": "",
+				"default": null
+			},
+			"server": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"aircrafts": {
+				"type": "varchar(10000)",
+				"flags": "NOT NULL",
+				"default": "'[]'"
+			}
+		},
+		"pk": "id"
+	},
+	"links": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"title": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"url": {
+				"type": "longtext",
+				"flags": "NOT NULL",
+				"default": null
+			}
+		},
+		"pk": "id"
+	},
+	"multipliers": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"label": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"amount": {
+				"type": "float",
+				"flags": "NOT NULL",
+				"default": 0
+			}
+		},
+		"pk": "id"
+	},
+	"operators": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"name": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"code": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"ownVA": {
+				"type": "tinyint",
+				"flags": "NOT NULL",
+				"default": 0
+			}
+		},
+		"pk": "id"
+	},
+	"pireps": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"pilot": {
+				"type": "varchar(5)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"vehicle": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"operator": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"route": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"flightTime": {
+				"type": "bigint",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"state": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"comments": {
+				"type": "longtext",
+				"flags": "",
+				"default": null
+			},
+			"multi": {
+				"type": "int",
+				"flags": "",
+				"default": 0
+			},
+			"fuel": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"reportDate": {
+				"type": "bigint",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"flightDate": {
+				"type": "bigint",
+				"flags": "",
+				"default": 0
+			},
+			"image": {
+				"type": "longtext",
+				"flags": "",
+				"default": null
+			}
+		},
+		"pk": "id"
+	},
+	"ranks": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"label": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"manual": {
+				"type": "tinyint",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"minHours": {
+				"type": "float",
+				"flags": "NOT NULL",
+				"default": 0
+			}
+		},
+		"pk": "id"
+	},
+	"loa": {
+		"fields": {
+			"id": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL AUTO_INCREMENT",
+				"default": null
+			},
+			"pilot": {
+				"type": "varchar(5)",
+				"flags": "NOT NULL",
+				"default": "''"
+			},
+			"state": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"startDate": {
+				"type": "bigint",
+				"flags": "NOT NULL",
+				"default": 0
+			},
+			"endDate": {
+				"type": "bigint",
+				"flags": "NOT NULL",
+				"default": 0
+			}
+		},
+		"pk": "id"
+	}
+}
