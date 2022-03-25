@@ -16,7 +16,7 @@ const path = require('path');
  * Import configuration file
  */
 
-const config = require('./config-test.js');
+const config = require('./config-test-empty.js');
 const vaconfig = config.get();
 
 /*****
@@ -58,6 +58,7 @@ function dbConnect() {
 
   // Add the created field back to the config
   vaconfig.database.created = created;
+  config.update(vaconfig);
 
 }
 
@@ -81,7 +82,7 @@ function createTables() {
   db.query('show tables', (e, results, fields) => {
 
     // Check for errors and throw and error if needed
-    if (e) throw e; return;
+    if (e) { console.log(e); throw e; return; }
 
     // Convert results to array of strings
     let currentTables = []
@@ -124,7 +125,7 @@ function createTables() {
         const query = db.query(q, (createErr, createResults, createFields) => {
 
           // Check for errors and throw and error if needed
-          if (createErr) throw createErr; return;
+          if (createErr) { throw createErr; return; }
 
           console.log("Table " + table + " created");
           console.log("Adding fields to table " + table);
@@ -154,7 +155,7 @@ function createTables() {
               const query = db.query(q, (alterErr, alterResults, alterFields) => {
 
                 // Check for errors and throw and error if needed
-                if (alterErr) throw alterErr; return;
+                if (alterErr) { throw alterErr; return; }
 
                 console.log("Field " + field + " added to table " + table);
 
@@ -173,7 +174,7 @@ function createTables() {
 
     }
 
-    // Update config to show table is created
+    // Update config to show tables are created
     vaconfig.database.created = true;
     config.update(vaconfig);
 
@@ -427,7 +428,7 @@ function createFunctions() {
  * 
  */
 
-functions.init = () => {
+functions.init = (params = { host: null, port: null, user: null, password: null, database: null, created: false }) => {
   return new Promise((resolve, reject) => {
 
     // Check there is a DB config object
@@ -437,20 +438,10 @@ functions.init = () => {
       console.log("No database object defined!")
 
       // Create empty DB config object
-      vaconfig.database = {
-        host: null,
-        port: null,
-        user: null,
-        password: null,
-        database: null/*,
-        created: false*/
-      }
+      vaconfig.database = params;
 
       // Update config file
       config.update(vaconfig);
-
-      // We aren't ready to connect to reject the promise
-      reject('db-config-missing');
 
     }
 
@@ -465,21 +456,20 @@ functions.init = () => {
           // We are missing DB config object properties or some are null
           console.log("Missing some DB config properties or not fully populated with values")
 
-          // Check if any DB config object properties are missing and create if needed with null/default
-          if (!vaconfig.database.hasOwnProperty("host")) { vaconfig.database.host = null; }
-          if (!vaconfig.database.hasOwnProperty("port")) { vaconfig.database.port = null; }
-          if (!vaconfig.database.hasOwnProperty("user")) { vaconfig.database.user = null; }
-          if (!vaconfig.database.hasOwnProperty("password")) { vaconfig.database.password = null; }
-          if (!vaconfig.database.hasOwnProperty("database")) { vaconfig.database.database = null; }
-          if (!vaconfig.database.hasOwnProperty("created")) { vaconfig.database.created = false; }
+          // Check if any DB config object properties are missing and create if needed with value from params argument
+          if (!vaconfig.database.hasOwnProperty("host")) { vaconfig.database.host = params.host; }
+          if (!vaconfig.database.hasOwnProperty("port")) { vaconfig.database.port = params.port; }
+          if (!vaconfig.database.hasOwnProperty("user")) { vaconfig.database.user = params.user; }
+          if (!vaconfig.database.hasOwnProperty("password")) { vaconfig.database.password = params.password; }
+          if (!vaconfig.database.hasOwnProperty("database")) { vaconfig.database.database = params.database; }
+          if (!vaconfig.database.hasOwnProperty("created")) { vaconfig.database.created = params.created; }
 
           // Update config file
           config.update(vaconfig);
 
-          // We aren't ready to connect to reject the promise
-          reject('db-config-incomplete');
+    }
 
-    } else {
+    try {
 
       // We have a complete and populated DB config object
       console.log("Complete DB config object available")
@@ -497,6 +487,10 @@ functions.init = () => {
 
       // Resolve the promise
       resolve('ready');
+
+    } catch(e) {
+
+      reject(e);
 
     }
 
