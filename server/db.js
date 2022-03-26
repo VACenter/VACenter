@@ -5,7 +5,7 @@
  */
 
 // Standard mysql module
-const mysql = require('mysql');
+const mysql = require('mysql2');
 let db;
 
 // Modules for interacting with filesyste
@@ -433,6 +433,47 @@ function createFunctions() {
 
   });
 
+}
+
+/*****
+ * 
+ * Function to drop all DB tables and clear the database.
+ * 
+ * WARNING: This function is irreversible. User with caution.
+ * 
+ */
+
+functions.drop = () => {
+  return new Promise((resolve, reject) => {
+
+    // Iterate through tables
+    for (let table in tables) {
+
+      // Create variable for the SQL query
+      let sql = `DROP TABLE ${table} `;
+
+      // Build the query object
+      const q = {
+        sql: sql,
+        values: []
+      }
+      
+      // Send the query to the DB
+      const query = db.promise().query(q). then(
+        ([rows,fields]) => {
+          console.log(`Table ${table} dropped`);
+        },
+        (err) => {
+          console.error(err);
+          reject(err);
+        }
+      );
+
+    }
+
+    resolve("dropped");
+
+  });
 }
 
 /*****
