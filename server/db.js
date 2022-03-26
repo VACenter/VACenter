@@ -230,10 +230,11 @@ function createFunctions() {
 
             sql += '?,';
 
+            // Check if we have a transform defined for the field
             if (tables[dbTable].fields[field].transform) {
 
+              // Get the transform function from crypto-js
               const transform = crypto[tables[dbTable].fields[field].transform];
-              console.log(base64.stringify(transform(params[field])));
 
               values.push(base64.stringify(transform(params[field])));
 
@@ -296,10 +297,11 @@ function createFunctions() {
           // Iterate through fields and add values to the array
           for (field in params.fields) {
 
+            // Check if we have a transform defined for the field
             if (tables[dbTable].fields[field].transform) {
 
+              // Get the transform function from crypto-js
               const transform = crypto[tables[dbTable].fields[field].transform];
-              console.log(base64.stringify(transform(params[field])));
 
               values.push(base64.stringify(transform(params[field])));
 
@@ -308,7 +310,7 @@ function createFunctions() {
               values.push(params[field]);
 
             }
-
+            
           }
 
           // Add time stamp value to the array
