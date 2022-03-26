@@ -12,6 +12,10 @@ let db;
 const fs = require('fs');
 const path = require('path');
 
+// Module for hashing transformations
+const crypto = require('crypto-js');
+const base64 = require('crypto-js/enc-base64');
+
 /*****
  * 
  * Import configuration file
@@ -225,7 +229,19 @@ function createFunctions() {
           for (field in params) {
 
             sql += '?,';
-            values.push(params[field]);
+
+            if (tables[dbTable].fields[field].transform) {
+
+              const transform = crypto[tables[dbTable].fields[field].transform];
+              console.log(base64.stringify(transform(params[field])));
+
+              values.push(base64.stringify(transform(params[field])));
+
+            } else {
+
+              values.push(params[field]);
+
+            }
 
           }
 
@@ -238,6 +254,8 @@ function createFunctions() {
             sql: sql,
             values: values
           }
+
+          console.log(q);
 
           try {
 
@@ -278,7 +296,18 @@ function createFunctions() {
           // Iterate through fields and add values to the array
           for (field in params.fields) {
 
-            values.push(params.fields[field]);
+            if (tables[dbTable].fields[field].transform) {
+
+              const transform = crypto[tables[dbTable].fields[field].transform];
+              console.log(base64.stringify(transform(params[field])));
+
+              values.push(base64.stringify(transform(params[field])));
+
+            } else {
+
+              values.push(params[field]);
+
+            }
 
           }
 

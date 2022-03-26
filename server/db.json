@@ -4,52 +4,62 @@
 			"pilotID": {
 				"type": "varchar(5)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"name": {
 				"type": "varchar(1024)",
 				"flags": "",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"password": {
 				"type": "varchar(7000)",
 				"flags": "",
-				"default": null
+				"default": null,
+				"transform": "SHA1"
 			},
 			"profilePicture": {
 				"type": "longtext",
 				"flags": "",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"rank": {
 				"type": "int",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"vanetID": {
 				"type": "varchar(1024)",
 				"flags": "",
-				"default":null
+				"default":null,
+				"transform": null
 			},
 			"permissions": {
 				"type": "int",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"changePWD": {
 				"type": "tinyint",
 				"flags": "NOT NULL",
-				"default": 1
+				"default": 1,
+				"transform": null
 			},
 			"revoked": {
 				"type": "tinyint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"meta": {
 				"type": "varchar(7000)",
 				"flags": "NOT NULL",
-				"default": "'{seen: null, created: null}'"
+				"default": "'{seen: null, created: null}'",
+				"transform": null
 			}
 		},
 		"pk": "pilotID"
@@ -59,37 +69,44 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"routeNumber": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"departureICAO": {
 				"type": "varchar(4)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"arrivalICAO": {
 				"type": "varchar(4)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"aircrafts": {
 				"type": "varchar(10000)",
 				"flags": "NOT NULL",
-				"default": "'[]'"
+				"default": "'[]'",
+				"transform": null
 			},
 			"flightTime": {
 				"type": "bigint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"minHours": {
 				"type": "float",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -99,22 +116,26 @@
 			"liveryID": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"aircraftID": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"liveryName": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"aircraftName": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			}
 		},
 		"pk": "liveryID"
@@ -124,37 +145,44 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"title": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"message": {
 				"type": "longtext",
 				"flags": "",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"depICAO": {
 				"type": "varchar(4)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"arrICAO": {
 				"type": "varchar(4)",
 				"flags": "",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"server": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"aircrafts": {
 				"type": "varchar(10000)",
 				"flags": "NOT NULL",
-				"default": "'[]'"
+				"default": "'[]'",
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -164,17 +192,20 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"title": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"url": {
 				"type": "longtext",
 				"flags": "NOT NULL",
-				"default": null
+				"default": null,
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -184,17 +215,20 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"label": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"amount": {
 				"type": "float",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -204,22 +238,26 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"name": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"code": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"ownVA": {
 				"type": "tinyint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -229,67 +267,80 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"pilot": {
 				"type": "varchar(5)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"vehicle": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"operator": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"route": {
 				"type": "int",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"flightTime": {
 				"type": "bigint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"state": {
 				"type": "int",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"comments": {
 				"type": "longtext",
 				"flags": "",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"multi": {
 				"type": "int",
 				"flags": "",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"fuel": {
 				"type": "int",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"reportDate": {
 				"type": "bigint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"flightDate": {
 				"type": "bigint",
 				"flags": "",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"image": {
 				"type": "longtext",
 				"flags": "",
-				"default": null
+				"default": null,
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -299,22 +350,26 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"label": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"manual": {
 				"type": "tinyint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"minHours": {
 				"type": "float",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			}
 		},
 		"pk": "id"
@@ -324,27 +379,32 @@
 			"id": {
 				"type": "bigint",
 				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null
+				"default": null,
+				"transform": null
 			},
 			"pilot": {
 				"type": "varchar(5)",
 				"flags": "NOT NULL",
-				"default": "''"
+				"default": "''",
+				"transform": null
 			},
 			"state": {
 				"type": "int",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"startDate": {
 				"type": "bigint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			},
 			"endDate": {
 				"type": "bigint",
 				"flags": "NOT NULL",
-				"default": 0
+				"default": 0,
+				"transform": null
 			}
 		},
 		"pk": "id"
