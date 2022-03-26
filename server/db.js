@@ -71,7 +71,7 @@ function dbConnect() {
 
 function createTables() {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
 
     // See if tables already created
     if (vaconfig.database.created) {
@@ -81,16 +81,15 @@ function createTables() {
 
     console.log("Config does not indicate if tables exists. Checking for tables");
 
-    // Grab list of current tables using MySQL "show tables" command
-    db.query('show tables', (e, results, fields) => {
+    try {
 
-      // Check for errors and throw and error if needed
-      if (e) { reject(e); return; }
+      // Grab list of current tables using MySQL "show tables" command
+      const [tableList,tableFields] = await db.promise().query('show tables');
 
       // Convert results to array of strings
       let currentTables = []
-      for (tableObj of results) {
-        currentTables.push(tableObj[fields[0].name]);
+      for (tableObj of tableList) {
+        currentTables.push(tableObj[tableFields[0].name]);
       }
 
       // Iterate tables config to see if we need to create the table
@@ -125,49 +124,39 @@ function createTables() {
           }
 
           // Send the query to the DB
-          const query = db.query(q, (createErr, createResults, createFields) => {
+          const [results,fields] = await db.promise().query(q);
 
-            // Check for errors and throw and error if needed
-            if (createErr) { reject(createErr); return; }
+          console.log("Table " + table + " created");
+          console.log("Adding fields to table " + table);
 
-            console.log("Table " + table + " created");
-            console.log("Adding fields to table " + table);
+          // Iterate all fields
+          for (let field in tables[table].fields) {
 
-            // Iterate all fields
-            for (let field in tables[table].fields) {
+            // Check if field is primary key and don't create as already exists when table created
+            if (field != pk) {
 
-              // Check if field is primary key and don't create as already exists when table created
-              if (field != pk) {
-
-                // Build the SQL query
-                let sql = "ALTER TABLE ?? ADD COLUMN ?? ";
-                sql += tables[table].fields[field].type + " ";
-                sql += tables[table].fields[field].flags + " ";
-                sql += (tables[table].fields[field].default == null) ? "" : (" DEFAULT " + tables[table].fields[field].default);
-        
-                // Build the query object
-                const q = {
-                  sql: sql,
-                  values: [
-                    table,
-                    field
-                  ]
-                }
-        
-                // Send the query to the DB
-                const query = db.query(q, (alterErr, alterResults, alterFields) => {
-
-                  // Check for errors and throw and error if needed
-                  if (alterErr) { reject(alterErr); }
-
-                  console.log("Field " + field + " added to table " + table);
-
-                });
-
+              // Build the SQL query
+              let sql = "ALTER TABLE ?? ADD COLUMN ?? ";
+              sql += tables[table].fields[field].type + " ";
+              sql += tables[table].fields[field].flags + " ";
+              sql += (tables[table].fields[field].default == null) ? "" : (" DEFAULT " + tables[table].fields[field].default);
+      
+              // Build the query object
+              const q = {
+                sql: sql,
+                values: [
+                  table,
+                  field
+                ]
               }
-            }
+      
+              // Send the query to the DB
+              const [results,fields] = await db.promise().query(q);
 
-          });
+              console.log("Field " + field + " added to table " + table);
+
+            }
+          }
 
         } else {
 
@@ -183,8 +172,12 @@ function createTables() {
 
       resolve("table-ready");
 
-    });
+    } catch(e) {
 
+      reject(e);
+
+    }
+    
   });
 
 }
@@ -201,12 +194,14 @@ function createFunctions() {
     // Iterate tables config to create functions for all tables
     for (let table in tables) {
 
+      console.log(`Creating functions for table ${table}`);
+
       // Create table-specific object to hold functions for the table
       functions[table] = {};
 
       // "create" function for the table - promise-based
       functions[table].create = (params, dbTable = table) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
 
           // Array to hold values which will be dynamically escaped when the query is built
           let values = [];
@@ -244,21 +239,25 @@ function createFunctions() {
             values: values
           }
 
-          // Send query to the DB
-          const query = db.query(q, (e, results, fields) => {
-            if (e) {
-              reject(e);
-            } else {
-              resolve( { results: results, fields: fields } );
-            }  
-          });  
+          try {
+
+            // Send the query to the DB
+            const [results,fields] = await db.promise().query(q);
+
+            resolve( { results: results, fields: fields } );
+
+          } catch(e) {
+
+            reject(e);
+
+          }
 
         });
       };
 
       // "update" function for the table - promise-based
       functions[table].update = (params, dbTable = table) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
 
           // Array to hold values which will be dynamically escaped when the query is built
           let values = [];
@@ -298,21 +297,25 @@ function createFunctions() {
             values: values
           }
 
-          // Send query to the DB
-          const query = db.query(q, (e, results, fields) => {
-            if (e) {
-              reject(e);
-            } else {
-              resolve( { results: results, fields: fields } );
-            }
-          });  
+          try {
+
+            // Send the query to the DB
+            const [results,fields] = await db.promise().query(q);
+
+            resolve( { results: results, fields: fields } );
+
+          } catch(e) {
+
+            reject(e);
+
+          }
 
         });
       };
 
       // "delete" function for the table - promise-based
       functions[table].delete = (params = null, dbTable = table) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
 
           // Array to hold values which will be dynamically escaped when the query is built
           let values = [];
@@ -349,15 +352,19 @@ function createFunctions() {
               values: values
             }
     
-            // Send query to the DB
-            const query = db.query(q, (e, results, fields) => {
-              if (e) {
-                reject(e);
-              } else {
-                resolve( { results: results, fields: fields } );
-              }
-            }); 
+            try {
 
+              // Send the query to the DB
+              const [results,fields] = await db.promise().query(q);
+  
+              resolve( { results: results, fields: fields } );
+  
+            } catch(e) {
+  
+              reject(e);
+  
+            }
+  
           } else {
 
             reject("missing 'where'");
@@ -369,7 +376,7 @@ function createFunctions() {
 
       // "get" function for the table - promise-based
       functions[table].get = (params = null, dbTable = table) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
 
           // Array to hold values which will be dynamically escaped when the query is built
           let values = [];
@@ -408,21 +415,25 @@ function createFunctions() {
             values: values
           }
 
-          // Send the query to the DB
-          const query = db.query(q, (e, results, fields) => {
-            if (e) {
-              reject(e);
-            } else {
-              resolve( { results: results, fields: fields } );
-            }
-          });  
+          try {
+
+            // Send the query to the DB
+            const [results,fields] = await db.promise().query(q);
+
+            resolve( { results: results, fields: fields } );
+
+          } catch(e) {
+
+            reject(e);
+
+          }
 
         });
       };
 
       // "has" function for the table - promise-based
       functions[table].has = (params, dbTable = table) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
           resolve(`Has ${dbTable} done: ` + JSON.stringify(params));
         });
       };
@@ -444,7 +455,7 @@ function createFunctions() {
  */
 
 functions.drop = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
 
     // Iterate through tables
     for (let table in tables) {
@@ -458,17 +469,19 @@ functions.drop = () => {
         values: []
       }
       
-      // Send the query to the DB
-      const query = db.promise().query(q). then(
-        ([rows,fields]) => {
-          console.log(`Table ${table} dropped`);
-        },
-        (err) => {
-          console.error(err);
-          reject(err);
-        }
-      );
+      try {
 
+        // Send the query to the DB
+        const query = await db.promise().query(q);
+
+        console.log(`Table ${table} dropped`);
+
+      } catch(e) {
+
+        reject(e);
+
+      }
+      
     }
 
     resolve("dropped");
@@ -483,7 +496,7 @@ functions.drop = () => {
  */
 
 functions.init = (params = { host: null, port: null, user: null, password: null, database: null, created: false }) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
 
     // Check there is a DB config object
     if (!vaconfig.hasOwnProperty("database")) {
@@ -537,52 +550,27 @@ functions.init = (params = { host: null, port: null, user: null, password: null,
       // We have a complete and populated DB config object
       console.log("Complete DB config object available")
 
-      // Initialise mysql connection
-      dbConnect();
+      try {
 
-      // Check if the DB tables are created and create if needed
-      createTables().then(
+        // Initialise mysql connection
+        dbConnect();
 
-        (res) => { 
+        // Check if the DB tables are created and create if needed
+        await createTables()
 
-          console.log(res);
+        // Create utility functions for export
+        await createFunctions();
 
-          // Create utility functions for export
-          createFunctions().then(
+        console.log("Ready");
 
-            (res) => {
+        // Resolve the promise
+        resolve('ready');
 
-              console.log(res);
+      } catch(e) {
 
-              console.log("Ready");
+        reject(e);
 
-              // Resolve the promise
-              resolve('ready');
-
-            },
-
-            (err) => { 
-              
-              console.error(err);
-
-              reject(err);
-
-            
-            }
-            
-          );
-
-        },
-
-				(err) => { 
-          
-          console.error(err);
-
-          reject(err);
-        
-        }
-
-      );
+      }
 
   });
 }
