@@ -36,12 +36,9 @@ const tables = JSON.parse(fs.readFileSync(path.join(__dirname, 'db.json')));
 
 let functions = {}
 
-/*****
- * 
- * Function to initialise mysql connection
- * 
+/**
+ * Function to initialise a mysql connection
  */
-
 function dbConnect() {
 
   console.log("Connecting to DB");
@@ -63,12 +60,9 @@ function dbConnect() {
 
 }
 
-/*****
- * 
+/**
  * Function to check if we have all needed DB tables and create if needed
- * 
  */
-
 function createTables() {
 
   return new Promise(async (resolve, reject) => {
@@ -182,10 +176,8 @@ function createTables() {
 
 }
 
-/*****
- * 
+/**
  * Populate exports with utility functions for each table
- * 
  */
 function createFunctions() {
 
@@ -199,7 +191,11 @@ function createFunctions() {
       // Create table-specific object to hold functions for the table
       functions[table] = {};
 
-      // "create" function for the table - promise-based
+      /**
+       * "create" function for the table - promise-based
+       * @param {Object} params Object containing all fields to use in creating a row in the database table
+       * @param {string} dbTable The name of the table to create the row in -- this is automatically populated and should not be passed to the function
+       */
       functions[table].create = (params, dbTable = table) => {
         return new Promise(async (resolve, reject) => {
 
@@ -258,7 +254,16 @@ function createFunctions() {
         });
       };
 
-      // "update" function for the table - promise-based
+      /**
+       * "update" function for the table - promise-based
+       * @param {Object} params Object containing fields and where criteria for updating a table
+       * @param {Object} params.fields Object containing all fields/values to to be modified when updating table rows
+       * @param {Object} params.where Object specifying a "where" criteria to select the rows to update in the table
+       * @param {string} params.where.field Name of the field to use in the "where" criteria
+       * @param {string} params.where.operator MySQL operator to use in the "where" criteria (such as "=")
+       * @param {string} params.where.value Value to compare the field against using the operator in the "where" criteria (can only be a numeric value if the field is an numeric type)
+       * @param {string} dbTable The name of the table to update rows in -- this is automatically populated and should not be passed to the function
+       */
       functions[table].update = (params, dbTable = table) => {
         return new Promise(async (resolve, reject) => {
 
@@ -316,7 +321,11 @@ function createFunctions() {
         });
       };
 
-      // "delete" function for the table - promise-based
+      /**
+       * "delete" function for the table - promise-based
+       * @param {Object} params Object containing all fields/values to use in "where" criteria to select rows to delete
+       * @param {string} dbTable The name of the table to delete rows in -- this is automatically populated and should not be passed to the function
+       */
       functions[table].delete = (params = null, dbTable = table) => {
         return new Promise(async (resolve, reject) => {
 
@@ -377,7 +386,11 @@ function createFunctions() {
         });
       };
 
-      // "get" function for the table - promise-based
+      /**
+       * "get" function for the table - promise-based
+       * @param {Object} params Object containing all fields/values to use in "where" criteria to select rows to return
+       * @param {string} dbTable The name of the table to select rows in -- this is automatically populated and should not be passed to the function
+       */
       functions[table].get = (params = null, dbTable = table) => {
         return new Promise(async (resolve, reject) => {
 
@@ -434,7 +447,11 @@ function createFunctions() {
         });
       };
 
-      // "has" function for the table - promise-based
+      /**
+       * "has" function for the table - promise-based. -- currently not implemented and pending
+       * @param {Object} params Object containing all fields/values to use in "where" criteria to select rows to return
+       * @param {string} dbTable The name of the table to select rows in -- this is automatically populated and should not be passed to the function
+       */
       functions[table].has = (params, dbTable = table) => {
         return new Promise(async (resolve, reject) => {
           resolve(`Has ${dbTable} done: ` + JSON.stringify(params));
@@ -449,14 +466,9 @@ function createFunctions() {
 
 }
 
-/*****
- * 
- * Function to drop all DB tables and clear the database.
- * 
- * WARNING: This function is irreversible. User with caution.
- * 
+/**
+ * Function to drop all DB tables and clear the database. WARNING: This function is irreversible. Use with caution.
  */
-
 functions.drop = () => {
   return new Promise(async (resolve, reject) => {
 
@@ -492,12 +504,9 @@ functions.drop = () => {
   });
 }
 
-/*****
- * 
+/**
  * Function to initialise DB and connect if ready - promise-based
- * 
  */
-
 functions.init = (params = { host: null, port: null, user: null, password: null, database: null, created: false }, reset = false) => {
   return new Promise(async (resolve, reject) => {
 
