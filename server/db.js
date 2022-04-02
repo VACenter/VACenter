@@ -12,10 +12,6 @@ let db;
 const fs = require('fs');
 const path = require('path');
 
-// Module for hashing transformations
-const crypto = require('crypto-js');
-const base64 = require('crypto-js/enc-base64');
-
 /*****
  * 
  * Import configuration file
@@ -88,7 +84,7 @@ function createTables() {
     try {
 
       // Grab list of current tables using MySQL "show tables" command
-      const [tableList,tableFields] = await db.promise().query('show tables');
+      const [tableList,tableFields] = await db.promise().query('show tables').catch(console.error);
 
       // Convert results to array of strings
       let currentTables = []
@@ -128,7 +124,7 @@ function createTables() {
           }
 
           // Send the query to the DB
-          const [results,fields] = await db.promise().query(q);
+          const [results,fields] = await db.promise().query(q).catch(console.error);
 
           console.log("Table " + table + " created");
           console.log("Adding fields to table " + table);
@@ -155,7 +151,7 @@ function createTables() {
               }
       
               // Send the query to the DB
-              const [results,fields] = await db.promise().query(q);
+              const [results,fields] = await db.promise().query(q).catch(console.error);
 
               console.log("Field " + field + " added to table " + table);
 
@@ -230,19 +226,7 @@ function createFunctions() {
 
             sql += '?,';
 
-            // Check if we have a transform defined for the field
-            if (tables[dbTable].fields[field].transform) {
-
-              // Get the transform function from crypto-js
-              const transform = crypto[tables[dbTable].fields[field].transform];
-
-              values.push(base64.stringify(transform(params[field])));
-
-            } else {
-
-              values.push(params[field]);
-
-            }
+            values.push(params[field]);
 
           }
 
@@ -261,7 +245,7 @@ function createFunctions() {
           try {
 
             // Send the query to the DB
-            const [results,fields] = await db.promise().query(q);
+            const [results,fields] = await db.promise().query(q).catch(console.error);
 
             resolve( { results: results, fields: fields } );
 
@@ -297,19 +281,7 @@ function createFunctions() {
           // Iterate through fields and add values to the array
           for (field in params.fields) {
 
-            // Check if we have a transform defined for the field
-            if (tables[dbTable].fields[field].transform) {
-
-              // Get the transform function from crypto-js
-              const transform = crypto[tables[dbTable].fields[field].transform];
-
-              values.push(base64.stringify(transform(params[field])));
-
-            } else {
-
-              values.push(params[field]);
-
-            }
+            values.push(params[field]);
             
           }
 
@@ -331,7 +303,7 @@ function createFunctions() {
           try {
 
             // Send the query to the DB
-            const [results,fields] = await db.promise().query(q);
+            const [results,fields] = await db.promise().query(q).catch(console.error);
 
             resolve( { results: results, fields: fields } );
 
@@ -386,7 +358,7 @@ function createFunctions() {
             try {
 
               // Send the query to the DB
-              const [results,fields] = await db.promise().query(q);
+              const [results,fields] = await db.promise().query(q).catch(console.error);
   
               resolve( { results: results, fields: fields } );
   
@@ -449,7 +421,7 @@ function createFunctions() {
           try {
 
             // Send the query to the DB
-            const [results,fields] = await db.promise().query(q);
+            const [results,fields] = await db.promise().query(q).catch(console.error);
 
             resolve( { results: results, fields: fields } );
 
@@ -503,7 +475,7 @@ functions.drop = () => {
       try {
 
         // Send the query to the DB
-        const query = await db.promise().query(q);
+        const query = await db.promise().query(q).catch(console.error);
 
         console.log(`Table ${table} dropped`);
 
@@ -526,7 +498,7 @@ functions.drop = () => {
  * 
  */
 
-functions.init = (params = { host: null, port: null, user: null, password: null, database: null, created: false }) => {
+functions.init = (params = { host: null, port: null, user: null, password: null, database: null, created: false }, reset = false) => {
   return new Promise(async (resolve, reject) => {
 
     // Check there is a DB config object
@@ -543,7 +515,7 @@ functions.init = (params = { host: null, port: null, user: null, password: null,
 
     }
 
-    if (params != null) {
+    if (reset && params != null) {
 
       // Reset DB settings with params
       vaconfig.database = params;
@@ -587,10 +559,10 @@ functions.init = (params = { host: null, port: null, user: null, password: null,
         dbConnect();
 
         // Check if the DB tables are created and create if needed
-        await createTables()
+        await createTables().catch(console.error);
 
         // Create utility functions for export
-        await createFunctions();
+        await createFunctions().catch(console.error);
 
         console.log("Ready");
 

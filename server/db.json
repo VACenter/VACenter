@@ -17,7 +17,7 @@
 				"type": "varchar(7000)",
 				"flags": "",
 				"default": null,
-				"transform": "SHA1"
+				"transform": null
 			},
 			"profilePicture": {
 				"type": "longtext",
