@@ -88,6 +88,37 @@ app.post("*", async (req, res, next)=>{
                     res.send("Missing information from form. Please go back, check the settings, and resubmit.");
                 }
                 break;
+            case "api/normalSetup":
+                if (req.body.analytics && req.body.vaname && req.body.vacode && req.body.defaultUser && req.body.defaultPWD) {
+                    const currentConfig = config.get();
+                    currentConfig.instance.analytics = req.body.anlytics == "true" ? true : false;
+                    currentConfig.instance.setup = true;
+                    currentConfig.vaInfo.name = req.body.vaname;
+                    currentConfig.vaInfo.code = req.body.vacode;
+                    db.users.create({
+                        pilotID: req.body.defaultUser,
+                        name: "Default User",
+                        password: bcrypt.hashSync(req.body.defaultPWD, 10),
+                        rank: 0
+                    }).then((result, err) =>{
+                        console.log(result);
+                        console.log(err);
+                        if(err){
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        }else{
+                            config.update(currentConfig);
+                            res.sendStatus(200);
+                            process.exit();
+                        }
+                    });
+                } else {
+                    res.status(400);
+                    res.send("Missing information from form. Please go back, check the settings, and resubmit.");
+                }
+                break;
             default:
                 res.status(404);
                 res.send("API path not found.")

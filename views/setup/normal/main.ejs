@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,81 +8,128 @@
     <%- include('../../components/head')%>
     <link rel="stylesheet" href="/public/styles/normalSetup.css">
 </head>
-<body class="d-flex h-100 text-center text-white bg-dark" style="background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('/public/images/setupCover.jpg'); background-size: cover; background-position: center;">
-
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-        <header class="mb-auto">
-            <div>
-                <h3 class="float-md-start mb-0">VACenter 4</h3>
-                <nav class="nav nav-masthead justify-content-center float-md-end">
-                    <a class="nav-link active" aria-current="page" href="#">Setup</a>
-                    <a class="nav-link" onclick="window.location.reload();">Restart</a>
-                </nav>
+<body>
+    <div class="fhContainer w-100 h-100">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fhNav" aria-label="Tenth navbar example">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample08"
+                    aria-controls="navbarsExample08" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+        
+                <div class="collapse navbar-collapse justify-content-md-center" id="navbarsExample08">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active fw-bold fs-4" aria-current="page" href="#">VACenter</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-        </header>
+        </nav>
+        <div class="row row-cols-2 fhContent">
+            <div class="col-4 px-3 text-center">
+                <div class="position-relative h-100">
+                    <div class="centerVH w-100 mx-auto">
+                        <i id="stage_ICON" class="bi bi-pc-display text-primary display-1"></i>
+                        <div class="d-none" id="stage_IMAGE">
+                            <img style="width: 25%;" src="https://va-center.com/public/images/logo.webp"><br><br>
+                        </div>
+                        <h1 id="stage_TITLE" class="display-3 fw-bold">Loading...</h1><br>
+                        <p id="stage_DESC" class="fs-5">Loading...</p>
 
-        <main id="setupWelcome" class="p-3 p-md-5 text-dark bg-light rounded">
-            <img class="mx-auto d-none d-md-block rounded-circle shadow border-2 border-light border" src="https://va-center.com/public/images/logo.webp" height="100" style="margin-top: -95px; z-index: 100px;">
-            <img class="mx-auto d-inline-block d-md-none rounded-circle shadow border-2 border-light border" src="https://va-center.com/public/images/logo.webp" height="75" style="margin-bottom: 15px;">
-            <h1>VACenter 4</h1>
-            <p class="lead">To set up the installation of VACenter, click "Begin Setup".</p>
-            <p class="lead">
-                <button onclick="nextPage()" class="btn btn-lg btn-dark fw-bold">Begin Setup</button>
-            </p>
-        </main>
-        <main id="analyticsSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
-            <span class="display-1"><i class="bi bi-bar-chart-fill text-primary"></i></span>
-            <h1>Analytics</h1>
-            <p class="lead">Allow VACenter to improve your experience. Analytics are only shared with VACenter and never shared with any third party.</p>
-            <p class="lead">
-                <button onclick="analytics(false);" class="btn btn-lg btn-secondary text-light">Deny</button>
-                <button onclick="analytics(true);" class="btn btn-lg btn-dark fw-bold">Allow</button>
-            </p>
-        </main>
-        <main id="nameSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
-            <span class="display-1"><i class="bi bi-fonts text-primary"></i></span>
-            <h1>VA Name</h1>
-            <p class="lead">The name of your virtual airline.</p>
-            <p class="lead">
-                <input class="form-control border border-secondary" type="text" id="setupInputName"><br>
-                <button onclick="setName();" class="btn btn-lg btn-dark fw-bold">Continue</button>
-            </p>
-        </main>
-        <main id="codeSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
-            <span class="display-1"><i class="bi bi-type text-primary"></i></span>
-            <h1>VA Code</h1>
-            <p class="lead">The airline ICAO code of your virtual airline.</p>
-            <p class="lead">
-                <input placeholder="VACV" class="form-control border border-secondary" type="text" id="setupInputCode" minlength="4" maxlength="4" required><br>
-                <button onclick="setCode();" class="btn btn-lg btn-dark fw-bold">Continue</button>
-            </p>
-        </main>
-        <main id="defaultAccountSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
-            <span class="display-1"><i class="bi bi-person-circle text-primary"></i></span>
-            <h1>Default Account</h1>
-            <p class="lead">Information for the default VACenter account.</p>        
-            <p class="lead">
-                <label>Pilot ID</label>
-                <input class="form-control border border-secondary" type="text" id="setupInputUserID" value="" disabled><br>
-                <label>Password</label>
-                <input class="form-control border border-secondary" type="password" id="setupInputUserPassword"><br>
-                <button onclick="setUser();" class="btn btn-lg btn-dark fw-bold">Continue</button>
-            </p>
-        </main>
-        <main id="finalSetup" class="p-3 p-md-5 text-dark bg-light rounded" style="display: none;">
-            <span class="display-1"><i class="bi bi-check-circle text-success"></i></span>
-            <h1>Setup Complete</h1>
-            <p class="lead">VACenter setup is complete! Click "Setup" to enter VACenter.</p>
-            <p class="lead">
-                <button onclick="setup();" class="btn btn-lg btn-dark fw-bold">Setup</button>
-            </p>
-        </main>
+                        <div id="progressBar" class="position-relative my-3 mx-auto w-50" style="height: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-8 border-start border-dark border-3 px-5">
+                <div id="stage_SET_intro" class="d-none p-5 w-100 text-center">
+                    <h1 class="fw-bold mt-5 display-4">VACenter 4</h1>
+                    <p class="fs-5">Welcome to your new VACenter instance. To begin setup of your new CC, click the begin button below!</p>
+                    <button onclick="nextStage();" class="fw-bold fs-5 btn btn-primary btn-lg">Begin <i class="bi bi-arrow-right-circle-fill"></i></button>
+                </div>
+                <div id="stage_SET_analytics" class="d-none p-5 w-100 text-center">
+                    <h1 class="fw-bold mt-5 display-4">VACenter Analytics</h1>
+                    <p class="fs-5">To help better improve your, and your pilot's experience with VACenter, VACenter can automatically collect analytics and metrics.
+                    </p>
+                    <button onclick="processAnalytics(false);" class="fw-bold fs-5 mx-3 btn btn-secondary btn-lg">Deny <i class="bi bi-x-circle-fill"></i></button>
+                    <button onclick="processAnalytics(true);" class="fw-bold fs-5 mx-3 btn btn-primary btn-lg">Accept <i class="bi bi-check-circle-fill"></i></button>
+                </div>
+                <div id="stage_SET_name" class="d-none p-5 w-100 text-center">
+                    <h1 class="fw-bold mt-5 display-4">Airline Name</h1>
+                    <p class="fs-5">Please enter the name of your Virtual Airline.</p>
+                    <input type="text" id="vaName" class="form-control mx-auto" oninput="this.style.width = 0; this.style.width = (this.scrollWidth + 100)+ 'px';" style="min-width: 100px; width: 100px; text-align: center;"><br>
+                    <button onclick="processName();" class="fw-bold fs-5 mx-3 btn btn-primary btn-lg">Submit <i
+                            class="bi bi-arrow-right-circle-fill"></i></button>
+                </div>
+                <div id="stage_SET_code" class="d-none p-5 w-100 text-center">
+                    <h1 class="fw-bold mt-5 display-4">Airline Code</h1>
+                    <p class="fs-5">Please enter the code of your Virtual Airline.</p>
+                    <input type="text" id="vaCode" class="form-control mx-auto"
+                        oninput="this.style.width = 0; this.style.width = (this.scrollWidth + 100)+ 'px';"
+                        style="min-width: 100px; width: 100px; text-align: center;"><br>
+                    <button onclick="processCode();" class="fw-bold fs-5 mx-3 btn btn-primary btn-lg">Submit <i
+                            class="bi bi-arrow-right-circle-fill"></i></button>
+                </div>
+                <div id="stage_SET_acc" class="d-none p-5 w-100 text-center">
+                    <h1 class="fw-bold mt-5 display-4">Default Account</h1>
+                    <p class="fs-5">Please create a password for your default account.</p>
+                    <div class="mb-3 row">
+                        <label for="staticPilotID" class="col-sm-2 col-form-label">Pilot ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="staticPilotID" value="DEFAULT">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputPassword">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="inputPasswordConfirm" class="col-sm-2 col-form-label">Confirm Password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputPasswordConfirm">
+                        </div>
+                    </div>
+                    <button onclick="processDefault();" class="fw-bold fs-5 mx-3 btn btn-primary btn-lg">Create <i class="bi bi-arrow-right-circle-fill"></i></button>
+                </div>
+                <div id="stage_SET_review" class="d-none p-5 w-100 text-center">
+                    <h1 class="fw-bold mt-5 display-4">Review Settings</h1>
+                    <p class="fs-5" id="finalDescriptionTEXT">Please review the settings below before finishing setup. If you wish to change any information, please click the "Restart" button below.</p>
+                    <div class="mb-3 row">
+                        <label for="staticReviewAnalytics" class="col-sm-2 col-form-label fw-bold"><i class="bi bi-bar-chart-fill"></i> Analytics</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="staticReviewAnalytics" value="ERROR">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="staticReviewName" class="col-sm-2 col-form-label fw-bold"><i class="bi bi-type"></i> VA Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="staticReviewName" value="ERROR">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="staticReviewCode" class="col-sm-2 col-form-label fw-bold"><i class="bi bi-type-bold"></i> VA Code</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="staticReviewCode" value="ERROR">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="staticReviewUser" class="col-sm-2 col-form-label fw-bold"><i class="bi bi-person-circle"></i> Default Login</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="staticReviewUser" value="ERROR">
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.location.reload();" id="finalRestartBTN" class="fw-bold fs-5 mx-3 btn btn-secondary btn-lg"><i class="bi bi-arrow-clockwise"></i> Restart</button>
 
-        <footer class="mt-auto text-white-50">
-            <p>Powered by VACenter v4.0.0</p>
-        </footer>
+                    <button onclick="finish();" id="finalSetupBTN" class="fw-bold fs-5 mx-3 btn btn-primary btn-lg">Finish Setup <i class="bi bi-arrow-right-circle-fill"></i></button>
+                </div>
+            </div>
+        </div>
     </div>
     <%- include('../../components/scripts')%>
+    <script src="/public/scripts/progress.min.js"></script>
     <script src="/public/scripts/normalSetup.js"></script>
 </body>
 </html>
