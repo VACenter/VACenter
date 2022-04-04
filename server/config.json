@@ -1,15 +1,17 @@
 {
   "database": {
-    "host": "http://127.0.0.1",
-    "port": 3306,
-    "username": "vacenter",
-    "password": "vacenter",
-    "database": "vacenter"
+    "host": null,
+    "port": null,
+    "password": null,
+    "database": null,
+    "user": null,
+    "created": false
   },
   "instance": {
     "port": 3000,
     "hosting": false,
-    "analytics": false
+    "analytics": false,
+    "setup": false
   },
   "vaInfo": {
     "name": "",

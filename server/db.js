@@ -17,7 +17,7 @@ const path = require('path');
  * Import configuration file
  */
 
-const config = require('./config-test-empty.js');
+const config = require('./config.js');
 const vaconfig = config.get();
 
 /*****

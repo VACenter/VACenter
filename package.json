@@ -4,7 +4,7 @@
   "description": "A revolutionary crew center",
   "main": "server/index.js",
   "scripts": {
-    "dev": "nodemon server/index.js",
+    "dev": "nodemon server/index.js --verbose --ignore '*.json'",
     "start": "pm2 start server --name VACenter"
   },
   "repository": {
