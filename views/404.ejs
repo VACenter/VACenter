@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 404 | <%= config.vaInfo.name %></title>
+    <%- include('components/head')%>
+    <link rel="stylesheet" href="/public/styles/error.css">
+</head>
+
+<body
+    style="background-image: linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.8)), url('<%= config.customisation.bg%>');">
+    <div class="h-100 position-relative text-light w-100">
+        <div class="centerVH text-center">
+            <h1 class="display-1 fw-bold">404 Error</h1>
+            <p class="fs-5"><span class="fw-bold">Oh no!</span> We couldn't find the resource you requested. <br>Please check the URL and try again.</p>
+            <button class="btn btn-primary btn-lg" onclick="history.back();">Go Back</button>
+        </div>
+    </div>
+    <%- include('components/scripts')%>
+</body>
+
+</html>

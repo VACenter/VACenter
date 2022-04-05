@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const config = require('./config.js');
 const db = require('./db.js');
+const { isGeneratorFunction } = require('util/types');
 
 //Config
 const launchConfig = config.get();
@@ -40,6 +41,9 @@ function checkNormalSetup(){
 checkDirtySetup();
 checkNormalSetup();
 
+// Token Store
+const authenticationTokens = new Map();
+
 //Express
 const app = express();
 
@@ -48,7 +52,15 @@ app.set('views', path.join(__dirname, '../views'));
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
-app.use("/public", express.static(path.join(__dirname, '../', "public")))
+app.use("/public", express.static(path.join(__dirname, '../', "public")));
+app.use(function (req, res, next) {
+    const reqConfig = Object.create(config.get());
+    delete reqConfig['database'];
+    delete reqConfig['instance'];
+
+    res.locals.config = reqConfig;
+    next();
+});
 
 app.listen(launchConfig.instance.port, ()=>{
     console.log(`VACenter listening on port ${launchConfig.instance.port}`)
@@ -91,6 +103,7 @@ app.post("*", async (req, res, next)=>{
             case "api/normalSetup":
                 if (req.body.analytics && req.body.vaname && req.body.vacode && req.body.defaultUser && req.body.defaultPWD) {
                     const currentConfig = config.get();
+                    console.log(currentConfig);
                     currentConfig.instance.analytics = req.body.anlytics == "true" ? true : false;
                     currentConfig.instance.setup = true;
                     currentConfig.vaInfo.name = req.body.vaname;
@@ -119,6 +132,36 @@ app.post("*", async (req, res, next)=>{
                     res.send("Missing information from form. Please go back, check the settings, and resubmit.");
                 }
                 break;
+            case "api/login":
+                if(req.body.pilotID && req.body.pwd){
+                    const pilot = (await db.users.get({
+                        pilotID: req.body.pilotID
+                    })).results[0];
+                    console.log(req.body);
+                    console.log(pilot);
+                    if(pilot){
+                        if(bcrypt.compareSync(req.body.pwd, pilot.password) == true){
+                            console.log("VALID")
+                            const tokenID = makeid(100);
+                            authenticationTokens.set(tokenID,{
+                                token: tokenID,
+                                pilotID: pilot.pilotID
+                            });
+                            res.cookie('vacenterAUTHTOKEN', tokenID, { maxAge: 1000 * 60 * 60 * 24 * 14}).redirect("/dashboard");
+                        }else{
+                            console.log("INVALID")
+                            res.status(401);
+                            res.redirect("/login?invalid=1");    
+                        }
+                    }else{
+                        res.status(401);
+                        res.redirect("/login?invalid=1");
+                    }
+                }else{
+                    res.status(400);
+                    res.send("The PilotID and Password are required fields. Please do not remove them from the form.");
+                }
+                break;
             default:
                 res.status(404);
                 res.send("API path not found.")
@@ -140,13 +183,85 @@ app.get("*", (req,res, next)=>{
 })
 
 //MAIN
-app.get("*", (req,res)=>{
+app.get("*", async (req,res)=>{
     const currentConfig = config.get();
-    if(req.path.slice(0,5) == "/api/"){
-
-    }else{
-        if(currentConfig){
-
+    if(req.path != "/resetPWD"){
+        console.log(req.path)
+        const user = await authenticate(req);
+        if(user == false){
+            res.clearCookie("vacenterAUTHTOKEN").redirect(req.path);
+        }else{
+            switch (req.path) {
+                case "/":
+                case "/login":
+                    if (user == null) {
+                        res.render("login");
+                    } else {
+                        res.redirect("/dashboard");
+                    }
+                    console.log(user);
+                    break;
+                default:
+                    res.render('404');
+                    break;
+            }
         }
+    }else{
+        //Reset PWD Page
     }
 })
+
+//Authentication
+
+async function authenticate(req){
+    const cookies = getAppCookies(req);
+
+    if(cookies['vacenterAUTHTOKEN']){
+        const token = cookies['vacenterAUTHTOKEN'];
+
+        if(authenticationTokens.has(token)){
+            const pilotID = (authenticationTokens.get(token)).pilotID;
+            const pilot = (await db.users.get({
+                pilotID: pilotID
+            })).results[0];
+
+            return pilot;
+
+        }else{
+            return false;    
+        }
+    }else{
+        return null;
+    }
+}
+
+//Utils
+
+const getAppCookies = (req) => {
+    if (req.headers.cookie) {
+        // We extract the raw cookies from the request headers
+        const rawCookies = req.headers.cookie.split('; ');
+        // rawCookies = ['myapp=secretcookie, 'analytics_cookie=beacon;']
+
+        const parsedCookies = {};
+        rawCookies.forEach(rawCookie => {
+            const parsedCookie = rawCookie.split('=');
+            // parsedCookie = ['myapp', 'secretcookie'], ['analytics_cookie', 'beacon']
+            parsedCookies[parsedCookie[0]] = parsedCookie[1];
+        });
+        return parsedCookies;
+    } else {
+        return {};
+    }
+};
+
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
