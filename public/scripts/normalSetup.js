@@ -210,7 +210,7 @@ function finish(){
         }
     }).then(value =>{
         if(value){
-            const data = `analytics=${settingsConfig.analytics}&vaname=${settingsConfig.vaName}&vacode=${settingsConfig.vaCode}&defaultUser=${settingsConfig.user.pilotid}&defaultPWD=${settingsConfig.user.pwd}`;
+            const data = `analytics=${settingsConfig.analytics}&vaname=${settingsConfig.vaName}&vacode=${settingsConfig.vaCode}&defaultUser=${settingsConfig.user.pilotid}&defaultPWD=${settingsConfig.user.password}`;
 
             const xhr = new XMLHttpRequest();
             xhr.withCredentials = true;
