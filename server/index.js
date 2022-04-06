@@ -7,7 +7,6 @@ const path = require('path');
 const fs = require('fs');
 const config = require('./config.js');
 const db = require('./db.js');
-const { isGeneratorFunction } = require('util/types');
 
 //Config
 const launchConfig = config.get();
@@ -59,6 +58,7 @@ app.use(function (req, res, next) {
     delete reqConfig['instance'];
 
     res.locals.config = reqConfig;
+    res.locals.path = req.path.slice(1);
     next();
 });
 
@@ -185,9 +185,16 @@ app.get("*", (req,res, next)=>{
 //MAIN
 app.get("*", async (req,res)=>{
     const currentConfig = config.get();
+    const cookies = getAppCookies(req);
     if(req.path != "/resetPWD"){
         console.log(req.path)
         const user = await authenticate(req);
+        const parsedUser = user ? Object.create(user) : null;
+        if(parsedUser){
+            delete parsedUser['password'];
+            delete parsedUser['changePWD'];
+            delete parsedUser['revoked'];
+        }
         if(user == false){
             res.clearCookie("vacenterAUTHTOKEN").redirect(req.path);
         }else{
@@ -200,6 +207,24 @@ app.get("*", async (req,res)=>{
                         res.redirect("/dashboard");
                     }
                     console.log(user);
+                    break;
+                case "/signout":
+                    const authCookie = cookies.vacenterAUTHTOKEN;
+                    if(authCookie){
+                        authenticationTokens.delete(authCookie)
+                    }
+                    res.clearCookie("vacenterAUTHTOKEN").redirect("/");
+                    break;
+                case "/dashboard":
+                    if(user == null){
+                        res.redirect("/login");
+                    }else{
+
+                        res.render("dashboard", {
+                            user: parsedUser,
+                            contentInteger: random(1, 3)
+                        })
+                    }
                     break;
                 default:
                     res.render('404');
@@ -264,4 +289,8 @@ function makeid(length) {
             charactersLength));
     }
     return result;
+}
+
+function random(min, max){
+    return Math.floor(Math.random() * max) + min;
 }

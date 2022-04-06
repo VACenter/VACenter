@@ -20,5 +20,11 @@
   },
   "customisation": {
     "bg": "https://webcdn.infiniteflight.com/blog/content/images/2021/04/a350-10year.jpg"
-  }
+  },
+  "links": [
+    {
+      "label": "VA Website",
+      "url": "https://va-center.com"
+    }
+  ]
 }

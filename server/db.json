@@ -187,29 +187,6 @@
 		},
 		"pk": "id"
 	},
-	"links": {
-		"fields": {
-			"id": {
-				"type": "bigint",
-				"flags": "unsigned NOT NULL AUTO_INCREMENT",
-				"default": null,
-				"transform": null
-			},
-			"title": {
-				"type": "varchar(1024)",
-				"flags": "NOT NULL",
-				"default": "''",
-				"transform": null
-			},
-			"url": {
-				"type": "longtext",
-				"flags": "NOT NULL",
-				"default": null,
-				"transform": null
-			}
-		},
-		"pk": "id"
-	},
 	"multipliers": {
 		"fields": {
 			"id": {

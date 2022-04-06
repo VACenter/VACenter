@@ -5,7 +5,9 @@
   "main": "server/index.js",
   "scripts": {
     "dev": "nodemon server/index.js --verbose --ignore '*.json'",
-    "start": "pm2 start server --name VACenter"
+    "start": "pm2 start server --name VACenter",
+    "noGitConfig": "git update-index --assume-unchanged server/config.json",
+    "showGitConfig": "git update-index --no-assume-unchanged server/config.json"
   },
   "repository": {
     "type": "git",

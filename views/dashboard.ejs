@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | <%= config.vaInfo.name %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <%- include('components/head')%>
+</head>
+
+<body class="p-5">
+    <%- include('components/nav')%>
+    <div class="p-5 w-100">
+        <h5 class="text-secondary">Welcome Back <%= user.name%>,</h5>
+        <% if(contentInteger == 1){%>
+            <h1 class="fw-bold">Ready to fly?</h1>
+            <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg"
+                style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://webcdn.infiniteflight.com/blog/content/images/2021/05/infinite-flight-21-1-release.jpg'); background-size: cover; background-position: bottom;">
+                <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                    <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"></h2>
+                    <ul class="d-flex list-unstyled mt-auto mb-5">
+                        <li class="me-auto">
+                            <h2 class="pt-5 display-6 lh-1 fw-bold">Start a Flight</h2>
+                        </li>
+                        <li class="d-flex align-items-end">
+                            <a class="btn btn-primary" href="/routes">View Routes <i class="bi bi-arrow-right-circle-fill"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        <%}else if(contentInteger == 2){%>
+            <h1 class="fw-bold">You can do it!</h1>
+            <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg"
+                style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://webcdn.infiniteflight.com/blog/content/images/2021/12/InfiniteFlight_2021-11-19-03-02-19.jpeg'); background-size: cover; background-position: center;">
+                <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                    <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"></h2>
+                    <ul class="d-flex list-unstyled mt-auto mb-5">
+                        <li class="me-auto">
+                            <h2 class="pt-5 display-6 lh-1 fw-bold">You're close to the next rank!</h2>
+                        </li>
+                        <li class="d-flex align-items-end">
+                            <a class="btn btn-primary" href="/me">View Profile <i class="bi bi-arrow-right-circle-fill"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        <%}else if(contentInteger == 3){%>
+            <h1 class="fw-bold">Check out today's route of the week!</h1>
+            <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg"
+                style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://i.ytimg.com/vi/aX-ZyS0B5Q0/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                    <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"></h2>
+                    <ul class="d-flex list-unstyled mt-auto mb-5">
+                        <li class="me-auto">
+                            <h2 class="pt-5 display-6 lh-1 fw-bold">VACV0001, YSSY <i class="bi bi-arrow-right"></i> YMML</h2>
+                        </li>
+                        <li class="d-flex align-items-end">
+                            <a class="btn btn-primary" href="/rotw">View Full Schedule <i
+                                    class="bi bi-arrow-right-circle-fill"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        <%}%>
+    </div>
+    <div class="row w-100 p-5 g-5 row-cols-4">
+        <div class="col">
+            <div class="form-control p-3 shadow text-center">
+                <h2 class="fw-bold">Rank</h2>
+                <p>You are nearly able to reach the "Captain" rank. Just 2 more hours to go!</p>
+                <div id="rankCircleContainer" class="position-relative mx-auto" style="width: 200px"></div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="form-control p-3 shadow text-center">
+                <h2 class="fw-bold">ROTW Schedule</h2>
+                <div class="row row-cols-2">
+                    <div class="col">
+                        <h5>Monday</h5>
+                        <hr>
+                        <p><i class="flag-icon flag-icon-au"></i> <a class="link link-dark" href="/routes?id=1">VACV0001</a> - YSSY <i class="bi bi-arrow-right"></i> YMML</p>
+                        <p><i class="flag-icon flag-icon-au"></i> <a class="link link-dark" href="/routes?id=1">VACV0002</a> - YMML <i class="bi bi-arrow-right"></i> YSSY</p>
+                    </div>
+                    <div class="col">
+                        <h5>Tuesday</h5>
+                        <hr>
+                        <p><i class="flag-icon flag-icon-gb"></i> <a class="link link-dark" href="/routes?id=1">VACV0003</a> - EGLL <i class="bi bi-arrow-right"></i> LFPG</p>
+                        <p><i class="flag-icon flag-icon-fr"></i> <a class="link link-dark" href="/routes?id=1">VACV0004</a> - LFPG <i class="bi bi-arrow-right"></i> EGLL</p>
+                    </div>
+                    <div class="col">
+                        <h5>Wednesday</h5>
+                        <hr>
+                        <p><i class="flag-icon flag-icon-us"></i> <a class="link link-dark" href="/routes?id=1">VACV0005</a> - KLAX <i class="bi bi-arrow-right"></i> KSFO</p>
+                        <p><i class="flag-icon flag-icon-us"></i> <a class="link link-dark" href="/routes?id=1">VACV0006</a> - KSFO <i class="bi bi-arrow-right"></i> KLAX</p>
+                    </div>
+                    <div class="col">
+                        <h5>Thursday</h5>
+                        <hr>
+                        <p><i class="flag-icon flag-icon-be"></i> <a class="link link-dark" href="/routes?id=1">VACV0007</a> - EBBR <i class="bi bi-arrow-right"></i> EDDF</p>
+                        <p><i class="flag-icon flag-icon-de"></i> <a class="link link-dark" href="/routes?id=1">VACV0008</a> - EDDF <i class="bi bi-arrow-right"></i> EBBR</p>
+                    </div>
+                    <div class="col">
+                        <h5>Friday</h5>
+                        <hr>
+                        <p><i class="flag-icon flag-icon-jp"></i> <a class="link link-dark" href="/routes?id=1">VACV0009</a> - RJAA <i class="bi bi-arrow-right"></i> YSSY</p>
+                        <p><i class="flag-icon flag-icon-au"></i> <a class="link link-dark" href="/routes?id=1">VACV0010</a> - YSSY <i class="bi bi-arrow-right"></i> RJAA</p>
+                    </div>
+                    <div class="col">
+                        <h5>Weekend</h5>
+                        <hr>
+                        <p><i class="flag-icon flag-icon-nz"></i> <a class="link link-dark" href="/routes?id=1">VACV0011</a> - NZAA <i class="bi bi-arrow-right"></i> KLAX</p>
+                        <p><i class="flag-icon flag-icon-us"></i> <a class="link link-dark" href="/routes?id=1">VACV0012</a> - KLAX <i class="bi bi-arrow-right"></i> NZAA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-control p-3 shadow text-center">
+                <h2 class="fw-bold">Events</h2><br>
+                <h5><a href="/events?id=1" class="link link-dark">Release Date</a></h5>
+                <hr>
+                <div class="text-start px-5">
+                <p><span class="fw-bold"><i class="bi bi-calendar2"></i> Date:</span> xx April 2022, 1200z</p>
+                <p><span class="fw-bold"><i class="bi bi-geo"></i> Location:</span> YMML</p>
+                <p><span class="fw-bold"><i class="bi bi-x-diamond"></i> Aircraft:</span> 777-300ER</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-control p-3 shadow text-center">
+                <h2 class="fw-bold">Nice work!</h2>
+                <p>Your last flight was the longest yet!</p>
+                <div id="rankCircleContainer" class="position-relative mx-auto" style="width: 200px"></div>
+            </div>
+        </div>
+    </div>
+    <%- include('components/scripts')%>
+    <script src="/public/scripts/progress.min.js"></script>
+    <script src="/public/scripts/dashboard.js"></script>
+</body>
+
+</html>
