@@ -136,6 +136,12 @@
 				"flags": "NOT NULL",
 				"default": "''",
 				"transform": null
+			},
+			"minHours": {
+				"type": "float",
+				"flags": "NOT NULL",
+				"default": 0,
+				"transform": null
 			}
 		},
 		"pk": "liveryID"
