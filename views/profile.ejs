@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | <%= config.vaInfo.name %>
+  </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+  <%- include('components/head')%>
+</head>
+
+<body class="p-5">
+  <%- include('components/nav')%>
+  <div class="px-4 py-5 my-5 text-center text-light rounded position-relative" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('<%= user.banner ? user.banner : config.customisation.bg %>'); background-position: center; background-size: cover;">
+    <button data-bs-toggle="modal" data-bs-target="#profileCustom" class="btn btn-light rounded-circle p-2" style="height: 40px; width:40px; position: absolute; top: 20px; right: 25px; background-image: url('https://icons.getbootstrap.com/assets/icons/pencil-fill.svg'); background-size: 50%; background-repeat: no-repeat; background-position: center;"></button>    
+    <!-- Modal -->
+    <div class="modal fade text-dark" id="profileCustom" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form action="/api/profile/update/pictures" method="POST">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Customise Images</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <h2 class="fw-bold">Profile Picture</h2>
+            <div class="form-floating my-3">
+              <input type="url" value="<%=user.profilePicture ? user.profilePicture : ''%>" id="profilePIC" class="form-control bg-light text-dark border-secondary" name="profilePIC" placeholder="t">
+              <label for="floatingInput"><i class="bi bi-image-alt"></i> Profile Picture URL</label>
+            </div>
+            <h5>Preview:</h5>
+            <img src="..." alt="Please provide a valid URL" id="profilePICPreview" style="width: 40%; object-fit: cover; object-position: center;" class="mb-4">
+            <h2 class="fw-bold">Profile Banner</h2>
+            <div class="form-floating my-3">
+              <input type="url" value="<%=user.banner ? user.banner : ''%>" id="profileBanner" class="form-control bg-light text-dark border-secondary" name="profileBanner" placeholder="t">
+              <label for="floatingInput"><i class="bi bi-image-alt"></i> Profile Banner URL</label>
+            </div>
+            <h5>Preview:</h5>
+            <img src="..." alt="Please provide a valid URL" id="profileBannerPreview" style="width: 60%; object-fit: cover; object-position: center;" class="mb-4">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+        </form>
+      </div>
+    </div>
+    <img class="d-block mx-auto mb-4 rounded-circle border border-light border-3 bg-light" style="object-fit: cover;" src="<%= user.profilePicture ? user.profilePicture : '/public/images/default.jpg' %>" alt="" width="72" height="72">
+    <h1 class="display-5 fw-bold"><%= user.name %></h1>
+    <div class="col-lg-6 mx-auto">
+      <p class="lead mb-4"><%= config.vaInfo.code%><%= user.callsign%></p>
+    </div>
+  </div>
+  <div class="px-4 py-3 my-5 text-start text-dark">
+    <h1 class="fw-bold"><i class="bi bi-person"></i> My Information</h1>
+    <form action="/api/profile/update/info" method="POST">
+      <div class="mb-3">
+        <label for="myInfoName" class="form-label">Name</label>
+        <input type="text" class="form-control" name="name" id="myInfoName" value="<%= user.name%>">
+      </div>
+      <div class="mb-3">
+        <label for="myInfoCallsign" class="form-label">Callsign</label>
+        <input type="text" disabled name="callsign" class="form-control" id="myInfoCallsign" value="<%= config.vaInfo.code %><%= user.callsign%>" aria-describedby="myInfoCallsignHelp">
+        <div id="myInfoCallsignHelp" class="form-text">This has been disabled by your VA.</div>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+  <div class="px-4 py-3 my-5 text-start text-dark">
+    <h1 class="fw-bold"><i class="bi bi-shield-shaded"></i> Security</h1>
+    <br>
+    <form action="/api/security/signMeOut" method="POST">
+      <button type="submit" class="btn btn-danger w-100 fw-bold btn-lg"><i class="bi bi-box-arrow-in-right"></i> Sign me out everywhere</button>
+    </form>
+    <br>
+    <h3 class="fw-bold">Reset Password</h3>
+    <form action="/api/security/resetPWD" method="POST">
+      <div class="mb-3">
+        <label for="resetPWDOldPassword" class="form-label">Old Password</label>
+        <input type="password" required class="form-control" name="oldPWD" id="resetPWDOldPassword">
+      </div>
+      <div class="mb-3">
+        <label for="resetPWDNewPassword" class="form-label">New Password</label>
+        <input type="password" required name="newPWD" class="form-control" id="resetPWDNewPassword">
+      </div>
+      <div class="mb-3">
+        <label for="resetPWDNewPasswordC" class="form-label">New Password (Confirm)</label>
+        <input type="password" required name="newPWDC" class="form-control" id="resetPWDNewPasswordC">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+  <%- include('components/scripts')%>
+  <script src="/public/scripts/progress.min.js"></script>
+  <script src="/public/scripts/profile.js"></script>
+</body>
+
+</html>

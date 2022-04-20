@@ -5,6 +5,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const fs = require('fs');
+const perms = require("./perms.js");
 const config = require('./config.js');
 const db = require('./db.js');
 
@@ -59,6 +60,7 @@ app.use(function (req, res, next) {
 
     res.locals.config = reqConfig;
     res.locals.path = req.path.slice(1);
+    res.locals.permsHandler = perms;
     next();
 });
 
@@ -81,8 +83,9 @@ app.get("*", (req,res, next)=>{
 
 app.post("*", async (req, res, next)=>{
     if(req.path.slice(0,5) == "/api/"){
+        const cookies = getAppCookies(req);
         switch(req.path.slice(1)){
-            case "api/dirtySetup":
+            case "api/dirtySetup": {
                 if(req.body.username && req.body.host && req.body.password && req.body.port && req.body.database){
                     const currentConfig = config.get();
                     currentConfig.database.user = req.body.username;
@@ -99,8 +102,8 @@ app.post("*", async (req, res, next)=>{
                     res.status(400);
                     res.send("Missing information from form. Please go back, check the settings, and resubmit.");
                 }
-                break;
-            case "api/normalSetup":
+                }break;
+            case "api/normalSetup": {
                 if (req.body.analytics && req.body.vaname && req.body.vacode && req.body.defaultUser && req.body.defaultPWD) {
                     const currentConfig = config.get();
                     console.log(currentConfig);
@@ -108,11 +111,23 @@ app.post("*", async (req, res, next)=>{
                     currentConfig.instance.setup = true;
                     currentConfig.vaInfo.name = req.body.vaname;
                     currentConfig.vaInfo.code = req.body.vacode;
+                    const perm = new perms.Perm();
+                    perm.set('SUPER_USER');
+                    perm.set("MANAGE_AIRCRAFT");
+                    perm.set("MANAGE_ROUTE");
+                    perm.set("MANAGE_PIREP");
+                    perm.set("MANAGE_EVENT");
+                    perm.set("MANAGE_SITE");
+                    perm.set("MANAGE_PILOT");
+                    perm.set("MANAGE_LOA");
+                    perm.set("MANAGE_RANK");
                     db.users.create({
                         pilotID: req.body.defaultUser,
                         name: "Default User",
                         password: bcrypt.hashSync(req.body.defaultPWD, 10),
-                        rank: 0
+                        rank: 0,
+                        callsign: "0",
+                        permissions: perm.value()
                     }).then((result, err) =>{
                         console.log(result);
                         console.log(err);
@@ -131,8 +146,8 @@ app.post("*", async (req, res, next)=>{
                     res.status(400);
                     res.send("Missing information from form. Please go back, check the settings, and resubmit.");
                 }
-                break;
-            case "api/login":
+                }break;
+            case "api/login": {
                 if(req.body.pilotID && req.body.pwd){
                     const pilot = (await db.users.get({
                         pilotID: req.body.pilotID
@@ -161,7 +176,119 @@ app.post("*", async (req, res, next)=>{
                     res.status(400);
                     res.send("The PilotID and Password are required fields. Please do not remove them from the form.");
                 }
-                break;
+                }break;
+            case "api/profile/update/pictures": {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        console.log(req.body)
+                        if(req.body.profilePIC){
+                            console.log("Updating Profile Picture")
+                            pilot.profilePicture = req.body.profilePIC;
+                        }
+                        if (req.body.profileBanner) {
+                            console.log("Updating Profile Banner")
+                            pilot.banner = req.body.profileBanner;
+                        }
+                        console.log(pilot);
+                        db.users.update({
+                            fields: {
+                                banner: pilot.banner,
+                                profilePicture: pilot.profilePicture
+                            },
+                            where: {
+                                field: "pilotID",
+                                operator: "=",
+                                value: pilot.pilotID
+                            }
+                        });
+                        res.status(200);
+                        res.redirect("/me");
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                }break;
+            case "api/profile/update/info": {
+                if(req.body.name){
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        db.users.update({
+                            fields: {
+                                name: req.body.name,
+                            },
+                            where: {
+                                field: "pilotID",
+                                operator: "=",
+                                value: pilot.pilotID
+                            }
+                        });
+                        res.status(200);
+                        res.redirect("/me");
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                }else{
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+                }break;
+            case "api/security/signMeOut": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    authenticationTokens.forEach(token=>{
+                        if(token.pilotID == pilot.pilotID){
+                            authenticationTokens.delete(token.token);
+                        }
+                    });
+                    res.status(200);
+                    res.redirect("/me");
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            }break;
+            case "api/security/resetPWD": {
+                if (req.body.oldPWD && req.body.newPWD && req.body.newPWDC) {
+                    if(req.body.newPWD == req.body.newPWDC){
+                        const pilot = await authenticate(req);
+                        if (pilot) {
+                            if(bcrypt.compareSync(req.body.oldPWD, pilot.password)){
+                                db.users.update({
+                                    fields: {
+                                        password: bcrypt.hashSync(req.body.newPWD, 10),
+                                    },
+                                    where: {
+                                        field: "pilotID",
+                                        operator: "=",
+                                        value: pilot.pilotID
+                                    }
+                                });
+                                const authCookie = cookies.vacenterAUTHTOKEN;
+                                if (authCookie) {
+                                    authenticationTokens.delete(authCookie)
+                                }
+                                res.clearCookie("vacenterAUTHTOKEN");
+                                res.status(200);
+                                res.redirect("/");
+                            }else{
+                                res.status(403);
+                                res.send("Incorrect password.")
+                            }
+                            
+                        } else {
+                            res.status(401);
+                            res.send("Not signed in.")
+                        }
+                    }else{
+                        res.status(400);
+                        res.send("Your new password doesn't match the confirm password.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            }break;
             default:
                 res.status(404);
                 res.send("API path not found.")
@@ -219,11 +346,53 @@ app.get("*", async (req,res)=>{
                     if(user == null){
                         res.redirect("/login");
                     }else{
-
                         res.render("dashboard", {
                             user: parsedUser,
                             contentInteger: random(1, 3)
                         })
+                    }
+                    break;
+                case "/me":
+                    if(user == null){
+                        res.redirect("/login");
+                    }else{
+                        res.render("profile", {
+                            user: parsedUser
+                        })
+
+                    }
+                    break;
+                case "/admin":
+                    if(user == null){
+                        res.redirect("/login");
+                    }else{
+                        if(user.permissions != 0){
+                            res.render("admin/dashboard", {
+                                user: parsedUser,
+                                userPerms: new perms.Perm(user.permissions)
+                            })
+                        }else{
+                            res.redirect("/");
+                        }                   
+                    }
+                    break;
+                case "/admin/ranks":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if(userPerms.has("MANAGE_RANK") || userPerms.has("SUPER_USER")){
+                            res.render("admin/ranks", {
+                                user: parsedUser,
+                                userPerms: userPerms
+                            })
+                        }else{
+                            if(user.permissions != 0){
+                                res.redirect("/admin")
+                            }else{
+                                res.redirect("/");
+                            }
+                        }
                     }
                     break;
                 default:
