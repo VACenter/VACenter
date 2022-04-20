@@ -4,10 +4,17 @@
   "description": "A revolutionary crew center",
   "main": "server/index.js",
   "scripts": {
-    "dev": "nodemon server/index.js --verbose --ignore '*.json'",
+    "dev": "nodemon server/index.js --verbose",
     "start": "pm2 start server --name VACenter",
+    "local": "node server/index.js",
     "noGitConfig": "git update-index --assume-unchanged server/config.json",
     "showGitConfig": "git update-index --no-assume-unchanged server/config.json"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "*.json",
+      "public/*"
+    ]
   },
   "repository": {
     "type": "git",
@@ -30,5 +37,8 @@
     "express": "^4.17.3",
     "mysql2": "^2.3.3",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }
