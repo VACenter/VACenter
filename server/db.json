@@ -25,10 +25,22 @@
 				"default": null,
 				"transform": null
 			},
+			"banner": {
+				"type": "longtext",
+				"flags": "",
+				"default": null,
+				"transform": null
+			},
 			"rank": {
 				"type": "int",
 				"flags": "NOT NULL",
 				"default": 0,
+				"transform": null
+			},
+			"callsign": {
+				"type": "varchar(1024)",
+				"flags": "NOT NULL",
+				"default": "0",
 				"transform": null
 			},
 			"vanetID": {
