@@ -1,0 +1,50 @@
+<ul class="nav nav-pills nav-fill mt-5 form-control p-1 p-md-2 shadow border-0 flex-column flex-sm-row">
+        <li class="nav-item flex-sm-fill">
+            <a class="nav-link <% if(path == 'admin'){%>active" aria-current="page<%}%>" href="/admin">Dashboard</a>
+        </li>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_RANK")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/ranks'){%>active" aria-current="page<%}%>" href="/admin/ranks">Ranks</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_AIRCRAFT")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/aircraft'){%>active" aria-current="page<%}%>" href="/admin/aircraft">Aircraft</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_CODESHARE")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/codeshare'){%>active" aria-current="page<%}%>" href="/admin/codeshare">Codeshare</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_ROUTE")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/routes'){%>active" aria-current="page<%}%>" href="/admin/routes">Routes</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PIREP")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/codeshare'){%>active" aria-current="page<%}%>" href="/admin/pirep">PIREPs</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_EVENT")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/event'){%>active" aria-current="page<%}%>" href="/admin/event">Events</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_LOA")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/loa'){%>active" aria-current="page<%}%>" href="/admin/loa">LOA</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PILOT")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/pilot'){%>active" aria-current="page<%}%>" href="/admin/pilot">Pilots</a>
+            </li>
+        <%}%>
+        <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_SITE")){%>
+            <li class="nav-item flex-sm-fill">
+                <a class="nav-link <% if(path == 'admin/settings'){%>active" aria-current="page<%}%>" href="/admin/settings">Settings</a>
+            </li>
+        <%}%>
+    </ul>
