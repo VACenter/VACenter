@@ -335,6 +335,9 @@ app.get("*", async (req,res)=>{
                     }
                     console.log(user);
                     break;
+                case "/report":
+                    res.redirect("https://github.com/VACenter/VACenter/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug+Report%3A")
+                    break;
                 case "/signout":
                     const authCookie = cookies.vacenterAUTHTOKEN;
                     if(authCookie){
