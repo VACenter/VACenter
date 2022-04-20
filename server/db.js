@@ -286,7 +286,7 @@ function createFunctions() {
           // Iterate through fields and add values to the array
           for (field in params.fields) {
 
-            values.push(params[field]);
+            values.push(params.fields[field]);
             
           }
 
@@ -308,6 +308,7 @@ function createFunctions() {
           try {
 
             // Send the query to the DB
+            console.log(q);
             const [results,fields] = await db.promise().query(q).catch(console.error);
 
             resolve( { results: results, fields: fields } );
