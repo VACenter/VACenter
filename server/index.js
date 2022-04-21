@@ -69,12 +69,33 @@ app.listen(launchConfig.instance.port, ()=>{
 });
 
 //API
-app.get("*", (req,res, next)=>{
+app.get("*", async (req,res, next)=>{
     if(req.path.slice(0,5) == "/api/"){
         switch(req.path.slice(1)){
+            case "api/ranks/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.ranks.get({}).then((result,err)=>{
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+                }break;
             default:
                 res.status(404);
-                res.send("API path not found.")
+                res.send("API path not found.");
+                break;
         }
     }else{
         next();
@@ -289,6 +310,41 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             }break;
+            case "api/ranks/new": {
+                if (req.body.rankName && (req.body.manualRank || req.body.rankHours)) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if(userPerms.has("MANAGE_RANK") || userPerms.has("SUPER_USER")){
+                            db.ranks.create({
+                                label: req.body.rankName,
+                                manual: req.body.manualRank ? 1 : 0,
+                                minHours: req.body.manualRank ? 9999 : parseFloat(req.body.rankHours)
+                            }).then((result, err) => {
+                                console.log(result);
+                                console.log(err);
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.redirect("/admin/ranks");
+                                }
+                            });
+                        }else{
+                            res.status(403);
+                            res.send("Not authorised to edit ranks.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            }break;
             default:
                 res.status(404);
                 res.send("API path not found.")
@@ -297,6 +353,45 @@ app.post("*", async (req, res, next)=>{
         next();
     }
 })
+
+app.delete("*", async (req, res, next) => {
+    if (req.path.slice(0, 5) == "/api/") {
+        switch (req.path.slice(1)) {
+            case "api/ranks/delete": {
+                console.log(req.body)
+                if(req.body.rankID){
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        db.ranks.delete({
+                            id: parseInt(req.body.rankID)
+                        }).then((result, err) => {
+                            if (err) {
+                                console.error(err);
+                                res.statusMessage = "Error from VACenter, check server console.";
+                                res.sendStatus(500);
+                                res.send("Error from VACenter, check server console.");
+                            } else {
+                                res.sendStatus(200);
+                            }
+                        });
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                }else{
+                    res.status(400);
+                    res.send("Missing Rank ID");
+                }
+            } break;
+            default:
+                res.status(404);
+                res.send("API path not found.");
+                break;
+        }
+    } else {
+        next();
+    }
+});
 
 //SETUP
 app.get("*", (req,res, next)=>{
