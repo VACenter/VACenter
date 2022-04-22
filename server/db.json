@@ -201,6 +201,12 @@
 				"flags": "NOT NULL",
 				"default": "'[]'",
 				"transform": null
+			},
+			"gates": {
+				"type": "longtext",
+				"flags": "NOT NULL",
+				"default": "'[]'",
+				"transform": null
 			}
 		},
 		"pk": "id"
