@@ -24,7 +24,7 @@
         <%}%>
         <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PIREP")){%>
             <li class="nav-item flex-sm-fill">
-                <a class="nav-link <% if(path == 'admin/codeshare'){%>active" aria-current="page<%}%>" href="/admin/pirep">PIREPs</a>
+                <a class="nav-link <% if(path == 'admin/pirep'){%>active" aria-current="page<%}%>" href="/admin/pirep">PIREPs</a>
             </li>
         <%}%>
         <% if(userPerms.has("SUPER_USER") || userPerms.has("MANAGE_EVENT")){%>
