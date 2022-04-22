@@ -10,17 +10,26 @@
 </head>
 <body style="background-image: linear-gradient(40deg, rgba(0,0,0,0.99),70%,rgba(0,0,0,0.5)), url('<%= config.customisation.bg%>');">
     <div class="h-100 position-relative text-light" id="main">
-        <form class="centerV p-5 formSignin" action="/api/login" method="POST">
+        <form class="centerV needs-validation p-5 formSignin" action="/api/login" method="POST" novalidate>
             <img src="<%= config.vaInfo.logo ? config.vaInfo.logo : 'https://va-center.com/public/images/logo.webp'%>" height="100" style="max-width: 30vw;" id="logo"><br><br>
             <h3 class="fw-bold text-secondary">Welcome Back</h3>
             <h1 class="display-3 fw-bold">Log in to crew center.</h1>
             <div class="form-floating my-3">
-                <input type="text" class="form-control bg-dark text-light border-secondary" name="pilotID" placeholder="00000">
+                <input type="text" class="form-control bg-dark text-light border-secondary" name="pilotID" required placeholder="00000">
                 <label for="floatingInput"><i class="bi bi-person-circle"></i> Pilot ID</label>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+                <div class="invalid-feedback">
+                    You must enter a valid Pilot ID.
+                </div>
             </div>
             <div class="form-floating mb-3">
-                <input type="password" class="form-control bg-dark text-light border-secondary" name="pwd" placeholder="00000">
+                <input type="password" class="form-control bg-dark text-light border-secondary" name="pwd" required placeholder="00000">
                 <label for="floatingInput"><i class="bi bi-shield-lock"></i> Password</label>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
             </div>
             <div class="form-floating">
                 <button type="submit" class="btn btn-dark border-secondary btn-lg">Login <i class="bi bi-arrow-right-circle-fill"></i></button>
@@ -31,5 +40,6 @@
         &copy; <%= config.vaInfo.name%> powered by VACenter 4.
     </div>
     <%- include('components/scripts')%>
+    <script src="/public/scripts/login.js"></script>
 </body>
 </html>
