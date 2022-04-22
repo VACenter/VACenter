@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adminstration | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <%- include('../components/head')%>
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+</head>
+
+<body class="p-2 p-md-5 pt-4">
+    <%- include('../components/nav')%>
+    <%- include('../components/adminNav')%>
+    <nav class="mt-5">
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="nav-link active" id="nav-updater-tab" data-bs-toggle="tab" data-bs-target="#nav-updater" type="button"
+                role="tab" aria-controls="nav-updater" aria-selected="true"><i class="bi bi-cloud-arrow-down"></i> Updates</button>
+            <button class="nav-link" id="nav-customlinks-tab" data-bs-toggle="tab" data-bs-target="#nav-customlinks" type="button"
+                role="tab" aria-controls="nav-customlinks" aria-selected="false"><i class="bi bi-link-45deg"></i> Custom Links</button>
+            <% if(userPerms.has("SUPER_USER")){%><button class="nav-link" id="nav-debug-tab" data-bs-toggle="tab" data-bs-target="#nav-debug" type="button"
+                role="tab" aria-controls="nav-debug" aria-selected="false"><i class="bi bi-terminal-fill"></i> Debug</button><%}%>
+            <button class="nav-link" id="nav-custom-tab" data-bs-toggle="tab" data-bs-target="#nav-custom" type="button"
+                role="tab" aria-controls="nav-custom" aria-selected="false"><i class="bi bi-palette"></i> Customisation</button>
+            <button class="nav-link" id="nav-webhooks-tab" data-bs-toggle="tab" data-bs-target="#nav-webhooks" type="button"
+                role="tab" aria-controls="nav-webhooks" aria-selected="false"><i class="bi bi-bell-fill"></i> Webhooks</button>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade p-3 show active" id="nav-updater" role="tabpanel" aria-labelledby="nav-updater-tab">Needs work</div>
+        <div class="tab-pane fade p-3" id="nav-customlinks" role="tabpanel" aria-labelledby="nav-customlinks-tab">
+            <h3>Debug Menu</h3>
+            <a></a>
+        </div>
+        <div class="tab-pane fade p-3" id="nav-debug" role="tabpanel" aria-labelledby="nav-debug-tab">
+            <h3>Debug Menu</h3>
+            <a href="/logFile" class="btn btn-dark"><i class="bi bi-file-earmark-binary-fill"></i> Download Log File [SENSITIVE]</a>
+            <br><br>
+            <p>Never give this file to anyone but <a class="link link-primary" href="https://va-center.com/team">verified VACenter staff</a>.</p>
+        </div>
+        <div class="tab-pane fade p-3" id="nav-custom" role="tabpanel" aria-labelledby="nav-custom-tab">
+            Custom
+        </div>
+        <div class="tab-pane fade p-3" id="nav-webhooks" role="tabpanel" aria-labelledby="nav-webhooks-tab">
+            <h3>Webhooks <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newHook"><i class="bi bi-plus-circle-fill"></i> Create new Webhook</button></h3>
+            <div class="modal fade text-dark" id="newHook" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form action="/api/webhooks/new" method="POST" class="needs-validation" novalidate>
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Create New Webhook</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <h2 class="fw-bold">New Webhook</h2>
+                                <div class="row row-cols-1">
+                                    <div class="col mb-4">
+                                        <label for="webhookName" class="form-label">Webhook Label</label>
+                                        <input type="text" class="form-control" id="webhookName" name="webhookName" required>
+                                        <div class="valid-feedback">
+                                            Looks good!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Need a valid name.
+                                        </div>
+                                    </div>
+                                    <div class="col mb-4">
+                                        <label for="hookURL" class="form-label">Webhook URL</label>
+                                        <input type="url" class="form-control" id="hookURL" min="0" name="hookURL" required>
+                                        <div class="valid-feedback">
+                                            Looks good!
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Need a valid URL.
+                                        </div>
+                                    </div>
+                                    <div class="col mb-4">
+                                        <label for="hookEvents" class="form-label">Events</label>
+                                        <select class="form-select" multiple required name="hookEvents">
+                                            <option value="newRank">New Rank</option>
+                                            <option value="newWebhook">New Webhook</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Need a valid URL.
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-check text-start">
+                                            <input class="form-check-input" type="checkbox" value="true" id="discordHook"
+                                                name="discordHook">
+                                            <label class="form-check-label" for="discordHook">
+                                                This is a discord webhook
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Create</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="webhookWrapper"></div>
+        </div>
+    </div>
+    <%- include('../components/scripts')%>
+    <script src="/public/scripts/progress.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+    <script>
+        (function () {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })();
+
+        //Webhooks
+
+        const webhookGrid = new gridjs.Grid({
+            autoWidth: false,
+            columns: ['Label', 'Events', 'URL', {
+                name: 'Actions',
+                sort: { enabled: false },
+                formatter: (cell, row) => {
+                    return gridjs.h('button', {
+                        className: 'btn btn-danger mx-2',
+                        onClick: () => deleteHook(row.cells[3].data)
+                    }, 'Delete');
+                }
+            }, {
+                    name: "id",
+                    hidden: true
+                }],
+            server: {
+                url: '/api/webhooks/all',
+                then: data => data.data.map(hook => {
+                    let events = JSON.parse(hook.events);
+                    let newEvents = [];
+                    events.forEach(event =>{
+                        const result = event.replace(/([A-Z])/g, " $1");
+                        const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+                        newEvents.push(finalResult);
+                        console.log(finalResult);
+                    })
+                    return [hook.label + `${hook.discord == 1 ? " (Discord)" : ""}`, newEvents.join(", "), hook.url,  hook.id]
+                })
+            },
+            search: {
+                enabled: true
+            },
+            language: {
+                'search': {
+                    'placeholder': '🔍 Search...'
+                }
+            },
+            className: {
+                td: 'grid-td',
+            },
+            style: {
+                table: {
+                    width: '100%'
+                },
+                td: {
+                    overflowX: "scroll"
+                }
+            },
+            sort: true,
+            pagination: {
+                enabled: true,
+                limit: 10,
+                summary: true
+            }
+        }).render(document.getElementById("webhookWrapper"));
+
+        //grid.on('rowClick', (...args) => console.log('row: ' + JSON.stringify(args), args));
+
+        function deleteHook(hookID) {
+            const data = `hookID=${hookID}`;
+
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === this.DONE) {
+                    if (this.status == 200) {
+                        webhookGrid.forceRender();
+                    } else {
+                        alert("An error occured, see console");
+                        console.error([this.status, this.statusText, this.responseText]);
+                    }
+                }
+            });
+
+            xhr.open("DELETE", "/api/webhooks/delete");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.send(data);
+        }
+    </script>
+</body>
+
+</html>

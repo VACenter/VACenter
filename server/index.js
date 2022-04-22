@@ -105,6 +105,32 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
                 }break;
+            case "api/webhooks/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    const userPerms = new perms.Perm(pilot.permissions);
+                    if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                        db.webhooks.get({}).then((result, err) => {
+                            if (err) {
+                                console.error(err);
+                                res.statusMessage = "Error from VACenter, check server console.";
+                                res.sendStatus(500);
+                                res.send("Error from VACenter, check server console.");
+                            } else {
+                                res.json({
+                                    data: result.results
+                                })
+                            }
+                        });
+                    }else{
+                        res.status(403);
+                        res.send("Not authorised to view this content.")
+                    }
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            } break;
             default:
                 res.status(404);
                 res.send("API path not found.");
@@ -358,6 +384,49 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             }break;
+            case "api/webhooks/new": {
+                if (req.body.webhookName && req.body.hookURL && req.body.hookEvents) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                            const hookEvents = [];
+                            console.log(req.body)
+                            if(Array.isArray(req.body.hookEvents)) {
+                                req.body.hookEvents.forEach(event => {
+                                    hookEvents.push(event);
+                                });
+                            }else{
+                                hookEvents.push(req.body.hookEvents);
+                            }
+                            db.webhooks.create({
+                                label: req.body.webhookName,
+                                url: req.body.hookURL,
+                                discord: req.body.discordHook ? 1 : 0,
+                                events: JSON.stringify(hookEvents)
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.redirect("/admin/settings");
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit webhooks.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
             default:
                 res.status(404);
                 res.send("API path not found.")
@@ -392,6 +461,37 @@ app.delete("*", async (req, res, next) => {
                         res.send("Not signed in.")
                     }
                 }else{
+                    res.status(400);
+                    res.send("Missing Rank ID");
+                }
+            } break;
+            case "api/webhooks/delete": {
+                if (req.body.hookID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                            db.webhooks.delete({
+                                id: parseInt(req.body.hookID)
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.sendStatus(200);
+                                }
+                            });
+                        }else{
+                            res.status(403);
+                            res.send("Not allowed to modify webhooks.")
+                        }                        
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
                     res.status(400);
                     res.send("Missing Rank ID");
                 }
@@ -501,6 +601,41 @@ app.get("*", async (req,res)=>{
                             if(user.permissions != 0){
                                 res.redirect("/admin")
                             }else{
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/settings":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                            res.render("admin/settings", {
+                                user: parsedUser,
+                                userPerms: userPerms
+                            })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/logFile":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("SUPER_USER")) {
+                            res.sendFile(path.join(__dirname, "vacenter.log"));
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
                                 res.redirect("/");
                             }
                         }
