@@ -166,7 +166,6 @@ app.post("*", async (req, res, next)=>{
             case "api/normalSetup": {
                 if (req.body.analytics && req.body.vaname && req.body.vacode && req.body.defaultUser && req.body.defaultPWD) {
                     const currentConfig = config.get();
-                    console.log(currentConfig);
                     currentConfig.instance.analytics = req.body.anlytics == "true" ? true : false;
                     currentConfig.instance.setup = true;
                     currentConfig.vaInfo.name = req.body.vaname;
@@ -189,8 +188,6 @@ app.post("*", async (req, res, next)=>{
                         callsign: "0",
                         permissions: perm.value()
                     }).then((result, err) =>{
-                        console.log(result);
-                        console.log(err);
                         if(err){
                             console.error(err);
                             res.statusMessage = "Error from VACenter, check server console.";
@@ -212,11 +209,8 @@ app.post("*", async (req, res, next)=>{
                     const pilot = (await db.users.get({
                         pilotID: req.body.pilotID
                     })).results[0];
-                    console.log(req.body);
-                    console.log(pilot);
                     if(pilot){
                         if(bcrypt.compareSync(req.body.pwd, pilot.password) == true){
-                            console.log("VALID")
                             const tokenID = makeid(100);
                             authenticationTokens.set(tokenID,{
                                 token: tokenID,
@@ -224,7 +218,6 @@ app.post("*", async (req, res, next)=>{
                             });
                             res.cookie('vacenterAUTHTOKEN', tokenID, { maxAge: 1000 * 60 * 60 * 24 * 14}).redirect("/dashboard");
                         }else{
-                            console.log("INVALID")
                             res.status(401);
                             res.redirect("/login?invalid=1");    
                         }
@@ -240,16 +233,12 @@ app.post("*", async (req, res, next)=>{
             case "api/profile/update/pictures": {
                     const pilot = await authenticate(req);
                     if (pilot) {
-                        console.log(req.body)
                         if(req.body.profilePIC){
-                            console.log("Updating Profile Picture")
                             pilot.profilePicture = req.body.profilePIC;
                         }
                         if (req.body.profileBanner) {
-                            console.log("Updating Profile Banner")
                             pilot.banner = req.body.profileBanner;
                         }
-                        console.log(pilot);
                         db.users.update({
                             fields: {
                                 banner: pilot.banner,
@@ -360,8 +349,6 @@ app.post("*", async (req, res, next)=>{
                                 manual: req.body.manualRank ? 1 : 0,
                                 minHours: req.body.manualRank ? 9999 : parseFloat(req.body.rankHours)
                             }).then((result, err) => {
-                                console.log(result);
-                                console.log(err);
                                 if (err) {
                                     console.error(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
@@ -440,10 +427,11 @@ app.delete("*", async (req, res, next) => {
     if (req.path.slice(0, 5) == "/api/") {
         switch (req.path.slice(1)) {
             case "api/ranks/delete": {
-                console.log(req.body)
                 if(req.body.rankID){
                     const pilot = await authenticate(req);
                     if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_RANK") || userPerms.has("SUPER_USER")) {
                         db.ranks.delete({
                             id: parseInt(req.body.rankID)
                         }).then((result, err) => {
@@ -456,6 +444,10 @@ app.delete("*", async (req, res, next) => {
                                 res.sendStatus(200);
                             }
                         });
+                        }else{
+                            res.status(403);
+                            res.send("Not allowed to modify ranks.")
+                        }
                     } else {
                         res.status(401);
                         res.send("Not signed in.")
@@ -541,7 +533,6 @@ app.get("*", async (req,res)=>{
                     } else {
                         res.redirect("/dashboard");
                     }
-                    console.log(user);
                     break;
                 case "/report":
                     res.redirect("https://github.com/VACenter/VACenter/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug+Report%3A")
