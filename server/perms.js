@@ -1,3 +1,7 @@
+// Console Module
+require("./console.js");
+console.file("vacenter.log");
+
 /*****
  * 
  * Require mandatory modules/packages
@@ -7,10 +11,6 @@
 // Modules for interacting with filesyste
 const fs = require('fs');
 const path = require('path');
-
-// Console Module
-require("./console.js");
-console.file("logs/perms.log");
 
 /*****
  * 

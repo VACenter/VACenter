@@ -1,5 +1,18 @@
 //@ts-check
 
+// Console Module
+require("./console.js");
+//@ts-ignore
+console.file("vacenter.log");
+process.on('uncaughtException', (err) => {
+    // Console Module
+    require("./console.js");
+    //@ts-ignore
+    console.file("vacenter.log");
+    console.error(err);
+
+});
+
 //Dependancies
 const express = require('express');
 const bcrypt = require('bcrypt');
@@ -8,11 +21,6 @@ const fs = require('fs');
 const perms = require("./perms.js");
 const config = require('./config.js');
 const db = require('./db.js');
-
-// Console Module
-require("./console.js");
-//@ts-ignore
-console.file("logs/index.log");
 
 //Config
 const launchConfig = config.get();

@@ -1,3 +1,11 @@
+// Console Module
+require("./console.js");
+console.file("vacenter.log");
+
+setTimeout(() => {
+  throw new Error("test")
+}, 15000);
+
 /*****
  * 
  * Require mandatory modules/packages
@@ -11,10 +19,6 @@ let db;
 // Modules for interacting with filesyste
 const fs = require('fs');
 const path = require('path');
-
-// Console Module
-require("./console.js");
-console.file("logs/db.log");
 
 /*****
  * 

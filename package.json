@@ -7,13 +7,14 @@
     "dev": "nodemon server/index.js --verbose",
     "start": "pm2 start server --name VACenter",
     "local": "node server/index.js",
-    "noGitConfig": "git update-index --assume-unchanged server/config.json && cd server/logs && git update-index --assume-unchanged $(git ls-files | tr '\n' ' ')",
-    "showGitConfig": "git update-index --no-assume-unchanged server/config.json && cd server/logs && git update-index --no-assume-unchanged $(git ls-files | tr '\n' ' ')"
+    "noGitConfig": "git update-index --assume-unchanged server/config.json && git update-index --assume-unchanged server/vacenter.log",
+    "showGitConfig": "git update-index --no-assume-unchanged server/config.json && git update-index --no-assume-unchanged server/vacenter.log"
   },
   "nodemonConfig": {
     "ignore": [
       "*.json",
-      "public/*"
+      "public/*",
+      "*.log"
     ]
   },
   "repository": {

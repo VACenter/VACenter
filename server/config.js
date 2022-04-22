@@ -1,9 +1,11 @@
+// Console Module
+require("./console.js");
+console.file("vacenter.log");
+
 const { EventEmitter } = require('events');
 const eventEmit = new EventEmitter();
 const fs = require('fs');
 const path = require('path');
-require("./console.js");
-console.file("logs/config.log");
 let cachedConfig = null;
 let recache = true;
 
