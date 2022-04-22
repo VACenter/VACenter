@@ -105,6 +105,26 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
                 }break;
+            case "api/codeshare/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.operators.get({}).then((result, err) => {
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            } break;
             case "api/webhooks/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
@@ -134,16 +154,10 @@ app.get("*", async (req,res, next)=>{
             case "api/links/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
-                    const userPerms = new perms.Perm(pilot.permissions);
-                    if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
-                        const reqConfig = config.get();
-                        res.json({
-                            data: reqConfig.links
-                        })
-                    } else {
-                        res.status(403);
-                        res.send("Not authorised to view this content.")
-                    }
+                    const reqConfig = config.get();
+                    res.json({
+                        data: reqConfig.links
+                    })
                 } else {
                     res.status(401);
                     res.send("Not signed in.")
@@ -212,9 +226,22 @@ app.post("*", async (req, res, next)=>{
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
                         }else{
-                            config.update(currentConfig);
-                            res.sendStatus(200);
-                            process.exit();
+                            db.operators.create({
+                                name: req.body.vaname,
+                                code: req.body.vacode,
+                                ownVA: 1
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    config.update(currentConfig);
+                                    res.sendStatus(200);
+                                    process.exit();
+                                }
+                            });
                         }
                     });
                 } else {
@@ -230,14 +257,14 @@ app.post("*", async (req, res, next)=>{
                     if(pilot){
                         if(pilot.revoked == 0){
                             if (bcrypt.compareSync(req.body.pwd, pilot.password) == true) {
-                            const tokenID = makeid(100);
+                                const tokenID = makeid(100);
                                 authenticationTokens.set(tokenID, {
-                                token: tokenID,
-                                pilotID: pilot.pilotID
-                            });
+                                    token: tokenID,
+                                    pilotID: pilot.pilotID
+                                });
                                 res.cookie('vacenterAUTHTOKEN', tokenID, { maxAge: 1000 * 60 * 60 * 24 * 14 }).redirect("/dashboard");
                             } else {
-                            res.status(401);
+                                res.status(401);
                                 res.redirect("/login?r=ii");
                             }
                         }else{
@@ -394,6 +421,38 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             }break;
+            case "api/codeshare/new": {
+                if (req.body.operatorName && req.body.operatorCode) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_CODESHARE") || userPerms.has("SUPER_USER")) {
+                            db.operators.create({
+                                name: req.body.operatorName,
+                                code: req.body.operatorCode
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.redirect("/admin/codeshare");
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit codeshare.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
             case "api/webhooks/new": {
                 if (req.body.webhookName && req.body.hookURL && req.body.hookEvents) {
                     const pilot = await authenticate(req);
@@ -482,18 +541,18 @@ app.delete("*", async (req, res, next) => {
                     if (pilot) {
                         const userPerms = new perms.Perm(pilot.permissions);
                         if (userPerms.has("MANAGE_RANK") || userPerms.has("SUPER_USER")) {
-                        db.ranks.delete({
-                            id: parseInt(req.body.rankID)
-                        }).then((result, err) => {
-                            if (err) {
-                                console.error(err);
-                                res.statusMessage = "Error from VACenter, check server console.";
-                                res.sendStatus(500);
-                                res.send("Error from VACenter, check server console.");
-                            } else {
-                                res.sendStatus(200);
-                            }
-                        });
+                            db.ranks.delete({
+                                id: parseInt(req.body.rankID)
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.sendStatus(200);
+                                }
+                            });
                         }else{
                             res.status(403);
                             res.send("Not allowed to modify ranks.")
@@ -665,6 +724,25 @@ app.get("*", async (req,res)=>{
                             if(user.permissions != 0){
                                 res.redirect("/admin")
                             }else{
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/codeshare":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_CODESHARE") || userPerms.has("SUPER_USER")) {
+                            res.render("admin/codeshare", {
+                                user: parsedUser,
+                                userPerms: userPerms
+                            })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
                                 res.redirect("/");
                             }
                         }

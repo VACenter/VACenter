@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adminstration | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <%- include('../components/head')%>
+</head>
+
+<body class="p-2 p-md-5 pt-4">
+    <%- include('../components/nav')%>
+        <%- include('../components/adminNav')%>
+
+            <div class="mt-5">
+                <h1 class="fw-bold">Codeshare <button class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#newVA"><i class="bi bi-plus-circle-fill"></i> Add VA</button></h1>
+                <div class="modal fade text-dark" id="newVA" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="/api/codeshare/new" method="POST" class="needs-validation" novalidate>
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Create New Operator</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h2 class="fw-bold">New Operator</h2>
+                                    <div class="row row-cols-1">
+                                        <div class="col mb-4">
+                                            <label for="operatorName" class="form-label">Operator Name</label>
+                                            <input type="text" class="form-control" id="operatorName" name="operatorName"
+                                                required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Need a valid name.
+                                            </div>
+                                        </div>
+                                        <div class="col mb-4">
+                                            <label for="operatorCode" class="form-label">Operator Code</label>
+                                            <input type="text" class="form-control" id="operatorCode" name="operatorCode" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Need a valid number.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Create</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="wrapper"></div>
+            </div>
+
+
+            <%- include('../components/scripts')%>
+                <script src="/public/scripts/progress.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+                <script>
+                    (function () {
+                        'use strict'
+
+                        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                        var forms = document.querySelectorAll('.needs-validation')
+
+                        // Loop over them and prevent submission
+                        Array.prototype.slice.call(forms)
+                            .forEach(function (form) {
+                                form.addEventListener('submit', function (event) {
+                                    if (!form.checkValidity()) {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                    }
+
+                                    form.classList.add('was-validated')
+                                }, false)
+                            })
+                    })();
+
+                    const grid = new gridjs.Grid({
+                        columns: ['Name', 'Code', {
+                            name: 'Actions',
+                            sort: { enabled: false },
+                            formatter: (cell, row) => {
+                                return gridjs.h('button', {
+                                    className: 'btn btn-danger',
+                                    disabled: row.cells[3].data == 1 ? "true": undefined,
+                                    onClick: () => deleteOperator(row.cells[2].data)
+                                }, row.cells[3].data == 1 ? "Can't delete own VA" : "Delete");
+                            }
+                        }, {
+                                name: "id",
+                                hidden: true
+                            }, {
+                                name: "self",
+                                hidden: true
+                            }],
+                        server: {
+                            url: '/api/codeshare/all',
+                            then: data => data.data.map(operator =>
+                                [operator.name, operator.code, operator.id, operator.ownVA]
+                            )
+                        },
+                        style: {
+                            table: {
+                                width: '100%'
+                            },
+                            td: {
+                                overflowX: "scroll"
+                            }
+                        },
+                        search: {
+                            enabled: true
+                        },
+                        language: {
+                            'search': {
+                                'placeholder': '🔍 Search...'
+                            }
+                        },
+                        className: {
+                            td: 'grid-td',
+                        },
+                        sort: true,
+                        pagination: {
+                            enabled: true,
+                            limit: 10,
+                            summary: true
+                        }
+                    }).render(document.getElementById("wrapper"));
+
+                    function deleteOperator(opID) {
+                        const data = `opID=${opID}`;
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.withCredentials = true;
+
+                        xhr.addEventListener("readystatechange", function () {
+                            if (this.readyState === this.DONE) {
+                                if (this.status == 200) {
+                                    window.location.reload();
+                                } else {
+                                    alert("An error occured, see console");
+                                    console.error([this.status, this.statusText, this.responseText]);
+                                }
+                            }
+                        });
+
+                        xhr.open("DELETE", "/api/codeshare/delete");
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.send(data);
+                    }
+                </script>
+</body>
+
+</html>
