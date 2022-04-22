@@ -2,10 +2,6 @@
 require("./console.js");
 console.file("vacenter.log");
 
-setTimeout(() => {
-  throw new Error("test")
-}, 15000);
-
 /*****
  * 
  * Require mandatory modules/packages
