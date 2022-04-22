@@ -8,6 +8,10 @@
 const fs = require('fs');
 const path = require('path');
 
+// Console Module
+require("./console.js");
+console.file("logs/perms.log");
+
 /*****
  * 
  * Import permissions schema

@@ -12,6 +12,10 @@ let db;
 const fs = require('fs');
 const path = require('path');
 
+// Console Module
+require("./console.js");
+console.file("logs/db.log");
+
 /*****
  * 
  * Import configuration file

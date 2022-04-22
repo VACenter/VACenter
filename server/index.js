@@ -9,6 +9,11 @@ const perms = require("./perms.js");
 const config = require('./config.js');
 const db = require('./db.js');
 
+// Console Module
+require("./console.js");
+//@ts-ignore
+console.file("logs/index.log");
+
 //Config
 const launchConfig = config.get();
 

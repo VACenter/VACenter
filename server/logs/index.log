@@ -1,0 +1,66 @@
+[LOG, 2022-04-22T00:53:44.195Z] Complete DB config object available
+[LOG, 2022-04-22T00:53:44.196Z] Connecting to DB
+[LOG, 2022-04-22T00:53:44.205Z] Tables already created -- no action needed
+[LOG, 2022-04-22T00:53:44.205Z] Config does not indicate if tables exists. Checking for tables
+[LOG, 2022-04-22T00:53:44.208Z] VACenter listening on port 3000
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table users
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table routes
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table aircraft
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table events
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table multipliers
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table operators
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table pireps
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table ranks
+[LOG, 2022-04-22T00:53:44.208Z] Creating functions for table loa
+[LOG, 2022-04-22T00:53:44.208Z] Ready
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: users
+[LOG, 2022-04-22T00:53:44.219Z] Table users exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: routes
+[LOG, 2022-04-22T00:53:44.219Z] Table routes exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: aircraft
+[LOG, 2022-04-22T00:53:44.219Z] Table aircraft exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: events
+[LOG, 2022-04-22T00:53:44.219Z] Table events exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: multipliers
+[LOG, 2022-04-22T00:53:44.219Z] Table multipliers exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: operators
+[LOG, 2022-04-22T00:53:44.219Z] Table operators exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: pireps
+[LOG, 2022-04-22T00:53:44.219Z] Table pireps exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: ranks
+[LOG, 2022-04-22T00:53:44.219Z] Table ranks exists -- not creating
+[LOG, 2022-04-22T00:53:44.219Z] Checking if table needs to be created: loa
+[LOG, 2022-04-22T00:53:44.219Z] Table loa exists -- not creating
+[LOG, 2022-04-22T00:53:52.887Z] Complete DB config object available
+[LOG, 2022-04-22T00:53:52.887Z] Connecting to DB
+[LOG, 2022-04-22T00:53:52.888Z] Tables already created -- no action needed
+[LOG, 2022-04-22T00:53:52.888Z] Config does not indicate if tables exists. Checking for tables
+[LOG, 2022-04-22T00:53:52.891Z] VACenter listening on port 3000
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table users
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table routes
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table aircraft
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table events
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table multipliers
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table operators
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table pireps
+[LOG, 2022-04-22T00:53:52.891Z] Creating functions for table ranks
+[LOG, 2022-04-22T00:53:52.892Z] Creating functions for table loa
+[LOG, 2022-04-22T00:53:52.892Z] Ready
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: users
+[LOG, 2022-04-22T00:53:52.899Z] Table users exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: routes
+[LOG, 2022-04-22T00:53:52.899Z] Table routes exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: aircraft
+[LOG, 2022-04-22T00:53:52.899Z] Table aircraft exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: events
+[LOG, 2022-04-22T00:53:52.899Z] Table events exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: multipliers
+[LOG, 2022-04-22T00:53:52.899Z] Table multipliers exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: operators
+[LOG, 2022-04-22T00:53:52.899Z] Table operators exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: pireps
+[LOG, 2022-04-22T00:53:52.899Z] Table pireps exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: ranks
+[LOG, 2022-04-22T00:53:52.899Z] Table ranks exists -- not creating
+[LOG, 2022-04-22T00:53:52.899Z] Checking if table needs to be created: loa
+[LOG, 2022-04-22T00:53:52.899Z] Table loa exists -- not creating
