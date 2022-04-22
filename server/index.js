@@ -131,6 +131,24 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
             } break;
+            case "api/links/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    const userPerms = new perms.Perm(pilot.permissions);
+                    if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                        const reqConfig = config.get();
+                        res.json({
+                            data: reqConfig.links
+                        })
+                    } else {
+                        res.status(403);
+                        res.send("Not authorised to view this content.")
+                    }
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            } break;
             default:
                 res.status(404);
                 res.send("API path not found.");
@@ -414,6 +432,33 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             } break;
+            case "api/links/new": {
+                if (req.body.linkLabel && req.body.linkURL) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                            const reqConfig = config.get();
+                            reqConfig.links.push({
+                                id: reqConfig.links.length,
+                                label: req.body.linkLabel,
+                                url: req.body.linkURL
+                            });
+                            config.update(reqConfig);
+                            res.redirect("/admin/settings");
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit webhooks.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
             default:
                 res.status(404);
                 res.send("API path not found.")
@@ -479,6 +524,29 @@ app.delete("*", async (req, res, next) => {
                             res.status(403);
                             res.send("Not allowed to modify webhooks.")
                         }                        
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Missing Rank ID");
+                }
+            } break;
+            case "api/links/delete": {
+                if (req.body.linkID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                            const reqConfig = config.get();
+                            
+                            reqConfig.links.splice(reqConfig.links.findIndex(v => v.id === parseInt(req.body.linkID)), 1)
+                            res.sendStatus(200);
+                        } else {
+                            res.status(403);
+                            res.send("Not allowed to modify links.")
+                        }
                     } else {
                         res.status(401);
                         res.send("Not signed in.")
