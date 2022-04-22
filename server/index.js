@@ -228,24 +228,29 @@ app.post("*", async (req, res, next)=>{
                         pilotID: req.body.pilotID
                     })).results[0];
                     if(pilot){
-                        if(bcrypt.compareSync(req.body.pwd, pilot.password) == true){
+                        if(pilot.revoked == 0){
+                            if (bcrypt.compareSync(req.body.pwd, pilot.password) == true) {
                             const tokenID = makeid(100);
-                            authenticationTokens.set(tokenID,{
+                                authenticationTokens.set(tokenID, {
                                 token: tokenID,
                                 pilotID: pilot.pilotID
                             });
-                            res.cookie('vacenterAUTHTOKEN', tokenID, { maxAge: 1000 * 60 * 60 * 24 * 14}).redirect("/dashboard");
-                        }else{
+                                res.cookie('vacenterAUTHTOKEN', tokenID, { maxAge: 1000 * 60 * 60 * 24 * 14 }).redirect("/dashboard");
+                            } else {
                             res.status(401);
-                            res.redirect("/login?invalid=1");    
+                                res.redirect("/login?r=ii");
+                            }
+                        }else{
+                            res.status(403);
+                            res.redirect("/login?r=ro");
                         }
                     }else{
                         res.status(401);
-                        res.redirect("/login?invalid=1");
+                        res.redirect("/login?r=ii");
                     }
                 }else{
                     res.status(400);
-                    res.send("The PilotID and Password are required fields. Please do not remove them from the form.");
+                    res.redirect("/login?r=ni")
                 }
                 }break;
             case "api/profile/update/pictures": {
