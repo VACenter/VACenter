@@ -21,6 +21,8 @@ const fs = require('fs');
 const perms = require("./perms.js");
 const config = require('./config.js');
 const db = require('./db.js');
+const morgan = require("morgan");
+const cors = require("cors");
 
 //Config
 const launchConfig = config.get();
@@ -65,6 +67,7 @@ app.set('views', path.join(__dirname, '../views'));
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
+app.use(cors());
 app.use("/public", express.static(path.join(__dirname, '../', "public")));
 app.use(function (req, res, next) {
     const reqConfig = Object.create(config.get());
@@ -564,6 +567,37 @@ app.delete("*", async (req, res, next) => {
                 }else{
                     res.status(400);
                     res.send("Missing Rank ID");
+                }
+            } break;
+            case "api/codeshare/delete": {
+                if (req.body.opID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_CODESHARE") || userPerms.has("SUPER_USER")) {
+                            db.operators.delete({
+                                id: parseInt(req.body.opID)
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.sendStatus(200);
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not allowed to modify codeshare.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Missing Codeshare ID");
                 }
             } break;
             case "api/webhooks/delete": {
