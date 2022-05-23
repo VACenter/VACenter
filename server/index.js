@@ -128,6 +128,26 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
             } break;
+            case "api/aircraft/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.aircraft.get({}).then((result, err) => {
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            } break;
             case "api/webhooks/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
@@ -758,6 +778,27 @@ app.get("*", async (req,res)=>{
                             if(user.permissions != 0){
                                 res.redirect("/admin")
                             }else{
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/aircraft":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_AIRCRAFT") || userPerms.has("SUPER_USER")) {
+                            
+                            res.render("admin/aircraft", {
+                                user: parsedUser,
+                                userPerms: userPerms,
+                                ranks: (await db.ranks.get({})).results
+                            })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
                                 res.redirect("/");
                             }
                         }
