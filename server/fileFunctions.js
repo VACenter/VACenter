@@ -56,7 +56,6 @@ function FileExists(path){
     return new Promise((resolve, error) =>{
         fs.access(path, err => {
             if(err){
-                Sentry.captureException(err);
                 resolve(false);
             }else{
                 resolve(true);
