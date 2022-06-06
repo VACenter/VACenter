@@ -421,7 +421,7 @@ app.post("*", async (req, res, next)=>{
                             db.ranks.create({
                                 label: req.body.rankName,
                                 manual: req.body.manualRank ? 1 : 0,
-                                minHours: req.body.manualRank ? 9999 : parseFloat(req.body.rankHours)
+                                minHours: req.body.manualRank ? -1 : parseFloat(req.body.rankHours)
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
