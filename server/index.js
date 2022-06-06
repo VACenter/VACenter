@@ -21,6 +21,7 @@ const fs = require('fs');
 const perms = require("./perms.js");
 const config = require('./config.js');
 const db = require('./db.js');
+const request = require('request');
 const morgan = require("morgan");
 const cors = require("cors");
 
@@ -476,6 +477,57 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             } break;
+            case "api/aircraft/new": {
+                if (req.body.aircraftID && req.body.liveryID && req.body.minRank) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_AIRCRAFT") || userPerms.has("SUPER_USER")) {
+                            const options = {
+                                method: 'GET',
+                                url: `https://v4.api.va-center.com/v4/aircraft/${req.body.aircraftID}/livery/${req.body.liveryID}`
+                            };
+
+                            request(options, function (error, response, body) {
+                                if(error || response.statusCode != 200){
+                                    res.status(500);
+                                    res.send("Was unable to retrieve information on that aircraft.");
+                                    console.error(error);
+                                    console.error([response.statusCode, response.statusMessage]);
+                                }else{
+                                    const liveryObject = JSON.parse(body);
+                                    db.aircraft.create({
+                                        liveryID: req.body.liveryID,
+                                        aircraftID: req.body.aircraftID,
+                                        minHours: parseFloat(req.body.minRank),
+                                        aircraftName: liveryObject.aircraftName,
+                                        liveryName: liveryObject.liveryName
+                                    }).then((result, err) => {
+                                        if (err) {
+                                            console.error(err);
+                                            res.statusMessage = "Error from VACenter, check server console.";
+                                            res.sendStatus(500);
+                                            res.send("Error from VACenter, check server console.");
+                                        } else {
+                                            res.redirect("/admin/aircraft");
+                                        }
+                                    });
+                                }
+
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit codeshare.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
             case "api/webhooks/new": {
                 if (req.body.webhookName && req.body.hookURL && req.body.hookEvents) {
                     const pilot = await authenticate(req);
@@ -618,6 +670,37 @@ app.delete("*", async (req, res, next) => {
                 } else {
                     res.status(400);
                     res.send("Missing Codeshare ID");
+                }
+            } break;
+            case "api/aircraft/delete": {
+                if (req.body.liveryID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_AIRCRAFT") || userPerms.has("SUPER_USER")) {
+                            db.aircraft.delete({
+                                liveryID: req.body.liveryID
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.sendStatus(200);
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not allowed to modify aircraft.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Missing Livery ID");
                 }
             } break;
             case "api/webhooks/delete": {

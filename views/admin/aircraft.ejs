@@ -59,14 +59,14 @@
                                             <label for="minRank" class="form-label">Minimum Rank</label>
                                             <select class="form-select" id="rankSelect" name="minRank" required>
                                                 <% ranks.forEach(rank =>{%>
-                                                    <option value="<%= rank.minH%>"><%= rank.label%></option>    
+                                                    <option value="<%= rank.minHours%>"><%= rank.label%></option>    
                                                 <%})%>
                                             </select>
                                             <div class="valid-feedback">
                                                 Looks good!
                                             </div>
                                             <div class="invalid-feedback">
-                                                Need a valid name.
+                                                Need a valid rank.
                                             </div>
                                         </div>
                                     </div>
@@ -118,9 +118,8 @@
                             formatter: (cell, row) => {
                                 return gridjs.h('button', {
                                     className: 'btn btn-danger',
-                                    disabled: row.cells[3].data == 1 ? "true": undefined,
-                                    onClick: () => deleteOperator(row.cells[2].data)
-                                }, row.cells[3].data == 1 ? "Can't delete own VA" : "Delete");
+                                    onClick: () => deleteAircraft(row.cells[3].data)
+                                }, "Delete");
                             }
                         }, {
                                 name: "id",
@@ -129,7 +128,7 @@
                         server: {
                             url: '/api/aircraft/all',
                             then: data => data.data.map(aircraft =>
-                                [aircraft.aircraftName, aircraft.liveryName, aircraft.minH, aircraft.liveryID]
+                                [aircraft.aircraftName, aircraft.liveryName, aircraft.minHours, aircraft.liveryID]
                             )
                         },
                         style: {
@@ -159,8 +158,8 @@
                         }
                     }).render(document.getElementById("wrapper"));
 
-                    function deleteOperator(opID) {
-                        const data = `opID=${opID}`;
+                    function deleteAircraft(liveryID) {
+                        const data = `liveryID=${liveryID}`;
 
                         const xhr = new XMLHttpRequest();
                         xhr.withCredentials = true;
@@ -176,7 +175,7 @@
                             }
                         });
 
-                        xhr.open("DELETE", "/api/codeshare/delete");
+                        xhr.open("DELETE", "/api/aircraft/delete");
                         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
                         xhr.send(data);
