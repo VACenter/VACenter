@@ -1835,7 +1835,7 @@ app.post("/admin/users/new", async function (req, res) {
                         id: pilotID ? pilotID : null,
                     }
 
-                    await CreateUser(req.body.username, "0", req.body.manual ? 1 : 0, req.body.admin ? true : false, bcrypt.hashSync(req.body.password, 10), req.body.Name, "/public/images/defaultPP.png", req.body.hours ? req.body.hours : 0, (new Date()).toString(), (new Date(0).toString()), true, 0, vanetid.id)
+                    await CreateUser(req.body.username, 0, req.body.manual ? 1 : 0, req.body.admin ? true : false, bcrypt.hashSync(req.body.password, 10), req.body.Name, "/public/images/defaultPP.png", req.body.hours ? req.body.hours : 0, (new Date()).toString(), (new Date(0).toString()), true, 0, vanetid.id)
                     await UpdateUser(req.body.username, await testRank(await GetUser(req.body.username)), req.body.admin ? true : false, bcrypt.hashSync(req.body.password, 10), req.body.Name, "/public/images/defaultPP.png", req.body.hours ? req.body.hours : 0, (new Date()).toString(), (new Date(0).toString()), true, 0, vanetid.id, user.manualRank)
                     
                     res.redirect("/admin/users");
