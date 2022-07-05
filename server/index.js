@@ -261,9 +261,34 @@ app.post("*", async (req, res, next)=>{
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
                                 } else {
+                                    //Report to VACenter API
+                                    const options = {
+                                        method: 'POST',
+                                        url: `http://localhost:2600/v4/register`,
+                                        headers: {'Content-Type': 'x-www-form-urlencoded'},
+                                        form:{
+                                            acceptAnalytics: currentConfig.instance.analytics,
+                                            airlineName: currentConfig.vaInfo.name,
+                                            airlineCode: currentConfig.vaInfo.code,
+                                            version: '4.0.0'
+                                        }
+                                    };
+
+                                    request(options, function (error, response, body) {
+                                        if (error || response.statusCode != 200) {
+                                            res.status(500);
+                                            res.send("Was unable to register with VACenter API.");
+                                            console.error(error);
+                                            console.error([response.statusCode, response.statusMessage]);
+                                        } else {
+                                            const data = JSON.parse(body);
+                                            currentConfig.ident = data.data.CCIdent;
                                     config.update(currentConfig);
                                     res.sendStatus(200);
                                     process.exit();
+                                        }
+
+                                    });
                                 }
                             });
                         }

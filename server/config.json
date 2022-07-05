@@ -7,6 +7,7 @@
     "user": null,
     "created": false
   },
+  "ident": null,
   "instance": {
     "port": 3000,
     "hosting": false,
