@@ -1325,26 +1325,14 @@ app.post('/setup', async (req,res)=>{
             setTimeout(async () => {
                 await reloadConfig();
                 setTimeout(async () => {
-                    const regReq = await URLReq(MethodValues.POST, "https://admin.va-center.com/stats/instances/new", null, null, {
-                        version: `${cvnb}`,
-                        airline: config.name,
-                        vanetKey: config.key,
-                        type: "VANET",
-                        wholeConfig: JSON.stringify(config)
-                    });
-                    config.other.ident = regReq[2];
+                    config.other.ident = "g1hru21gkjasdhmi23";
                     await FileWrite(`${__dirname}/../config.json`, JSON.stringify(config, null, 2));
                     setTimeout(async () => {
                         vanetCraft = await getVANetData();
                     }, 1000)
                     CreateOperator(config.name, 1, newConfig.code);
-                    if (regReq[1].statusCode == 200) {
                         await reloadConfig();
                         res.sendStatus(200);
-                    } else {
-                        await reloadConfig();
-                        res.status(regReq[1].statusCode).send(regReq[2])
-                    }
                 }, 1000);
                 
             }, 2000);
@@ -1394,14 +1382,7 @@ app.post('/setupNVN', async (req, res) => {
             setTimeout(async () => {
                 await reloadConfig();
                 setTimeout(async () => {
-                    const regReq = await URLReq(MethodValues.POST, "https://admin.va-center.com/stats/instances/new", null, null, {
-                        version: `${cvnb}`,
-                        airline: config.name,
-                        vanetKey: config.key,
-                        type: "NVANET",
-                        wholeConfig: JSON.stringify(config)
-                    });
-                    config.other.ident = regReq[2];
+                    config.other.ident = "as4frg8htrr257";
                     await FileWrite(`${__dirname}/../config.json`, JSON.stringify(config, null, 2));
                     vanetCraft = await getVANetData();
                     CreateOperator(config.name, 1, newConfig.code);
