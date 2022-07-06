@@ -16,8 +16,6 @@ require('dotenv').config()
 const tinify = require("tinify");
 tinify.key = "KfplF6KmZjMWXfFx8vqrXM8r4Wbtyqtp";
 const express = require('express');
-const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 const csv = require('csvtojson')
 const request = require('request');
 const atob = require('atob');
@@ -86,8 +84,7 @@ const {
         GetLinks, CreateLink, DeleteLink,
         CreateSession, GetSession, GetSessionByPilot, UpdateSession, DeleteSession,
         CreateMulti, GetMultipliers, GetMultiplier, GetMultiplierByLabel, DeleteMulti
-    } = require("./db")
-const { getVersionInfo } = require("./update");
+    } = require("./db");
 const { getVANetData, getVANetUser, createVANetPirep } = require('./vanet.js');
 const webhook = require("./webhook.js");
 //update();
@@ -138,18 +135,9 @@ function loadRanksMap(){
 loadRanksMap();
 
 //Versioning
-let branch = getVersionInfo().branch;
-let cvn = getVersionInfo().version;
-let cvnb = branch == "beta" ? `${cvn}B` : (branch == "alpha" ? `${cvn}A` : `${cvn}M`)
-/**
- * Used for checking the version info
- */
-function reloadVersion(){
-    cvn = getVersionInfo().version;
-    cvnb = branch == "beta" ? `${cvn}B` : (branch == "alpha" ? `${cvn}A` : `${cvn}M`)
-}
-
-reloadVersion();
+let branch = "master";
+let cvn = "3.2";
+let cvnb = branch == "beta" ? `${cvn}B` : (branch == "alpha" ? `${cvn}A` : `${cvn}M`);
 
 /**
  * @typedef {import('./types.js').user} user
@@ -365,23 +353,6 @@ setTimeout(async () => {
 
 //App
 const app = express();
-//Sentry
-Sentry.init({
-    dsn: "https://770628b2aa5447f8906e75e5c4904c48@o996992.ingest.sentry.io/5955471",
-    integrations: [
-        // enable HTTP calls tracing
-        new Sentry.Integrations.Http({ tracing: true }),
-        // enable Express.js middleware tracing
-        new Tracing.Integrations.Express({ app }),
-    ],
-    environment: "Production",
-    // Set tracesSampleRate to 1.0 to capture 100%
-    // of transactions for performance monitoring.
-    // We recommend adjusting this value in production
-    tracesSampleRate: 1.0,
-});
-app.use(Sentry.Handlers.requestHandler());
-app.use(Sentry.Handlers.tracingHandler());
 app.set('view engine', "ejs");
 app.set('views', path.join(__dirname, '/../views'));
 console.log(chalk.green("Starting VACenter"))
@@ -1247,26 +1218,11 @@ app.get('*', async (req, res, next)=>{
     }
 })
 
-app.get("/debug-sentry", function mainHandler(req, res) {
-    throw new Error("An error occured!");
-});
-
 app.get("*", (req, res, next) => {
     res.render("404", {
         config: getConfig()
     })
 })
-
-
-app.use(Sentry.Handlers.errorHandler());
-
-// Optional fallthrough error handler
-app.use(function onError(err, req, res, next) {
-    // The error id is attached to `res.sentry` to be returned
-    // and optionally displayed to the user for support.
-    res.statusCode = 500;
-    res.end(res.sentry + "\n");
-});
 
 app.listen(process.env.PORT, () => {
     console.log(chalk.green("Listening on port " + process.env.PORT));
@@ -1395,7 +1351,7 @@ app.post('/setupNVN', async (req, res) => {
     }catch(err){
         res.status(500);
         console.error(err);
-        Sentry.captureException(err);
+        console.error(err);
         res.send("err");
     }
     
@@ -1471,9 +1427,9 @@ app.post("/newPIREP", upload.single('pirepImg'), async (req, res) => {
                 if (req.body.aircraft) {
                         if (req.file) {
                             fs.readFile(req.file.path, function (err, sourceData) {
-                                Sentry.captureException(err);
+                                console.error(err);
                                 tinify.fromBuffer(sourceData).toBuffer(function (err, resultData) {
-                                    Sentry.captureException(err);
+                                    console.error(err);
                                     fs.unlinkSync(`${req.file.path}`);
                                     req.file.path = req.file.path + ".webp";
                                     fs.writeFileSync(`${req.file.path}`, resultData);
@@ -1808,7 +1764,7 @@ app.post("/admin/users/new", async function (req, res) {
                             pilotID = (await getVANetUser(req.body.IFC));
                         }
                     }catch(err) {
-                        Sentry.captureException(err);
+                        console.error(err);
                         res.status(500).send(sanitizer.sanitize(err));
                     }
                     let vanetid = {
@@ -1974,7 +1930,7 @@ app.post("/users/linkVANet", async function (req, res){
                 await UpdateUser(user.username, user.rank, user.admin, user.password, user.display, user.profileURL, user.hours, user.created, user.llogin, user.cp, user.revoked, pilotID, user.manualRank);
                 res.redirect("/");
             }catch(err){
-                Sentry.captureException(err);
+                console.error(err);
                 res.redirect("/account");
             }
         }else{
@@ -2376,9 +2332,9 @@ app.post('/finSlot', upload.single('pirepImg'), async (req, res) => {
                 if (req.body.fuel) {
                     if(req.file){
                         fs.readFile(req.file.path, function (err, sourceData) {
-                            Sentry.captureException(err);
+                            console.error(err);
                             tinify.fromBuffer(sourceData).toBuffer(function (err, resultData) {
-                                Sentry.captureException(err);
+                                console.error(err);
                                 fs.unlinkSync(`${req.file.path}`);
                                 req.file.path = req.file.path + ".webp";
                                 fs.writeFileSync(`${req.file.path}`, resultData);

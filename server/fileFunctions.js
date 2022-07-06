@@ -1,16 +1,6 @@
 //@ts-check
 const fs = require('fs');
-const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 require('dotenv').config()
-
-//Sentry
-/* Sentry.init({
-    dsn: "https://473725d276b441ea867cdde3d17b868b@o996992.ingest.sentry.io/5955471",
-    // We recommend adjusting this value in production, or using tracesSampler
-    // for finer control
-    tracesSampleRate: 0.5,
-}); */
 
 /**@module File Functions*/
 
@@ -24,7 +14,7 @@ function FileWrite(path, data){
     return new Promise((resolve, error) => {
         fs.writeFile(path, data, (err)=>{
             if(err){
-                Sentry.captureException(err);
+                console.error(err);
             }else{
                 resolve(true)
             }
@@ -40,7 +30,7 @@ function FileRead(path){
     return new Promise((resolve, error) =>{
         fs.readFile(path, (err, data)=>{
             if(err){
-                Sentry.captureException(err);
+                console.error(err);
             }else{
                 resolve(data)
             }
@@ -56,7 +46,7 @@ function FileExists(path){
     return new Promise((resolve, error) =>{
         fs.access(path, err => {
             if(err){
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false);
             }else{
                 resolve(true);
@@ -74,7 +64,7 @@ function FileRemove(path) {
     return new Promise((resolve, error) => {
         fs.unlink(path, err => {
             if (err) {
-                Sentry.captureException(err);;
+                console.error(err);;
             } else {
                 resolve(true);
             }

@@ -6,17 +6,7 @@ const path = require('path');
 const request = require('request');
 const bcrypt = require('bcrypt');
 const chalk = require('chalk');
-const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 require('dotenv').config()
-
-//Sentry
-/* Sentry.init({
-    dsn: "https://473725d276b441ea867cdde3d17b868b@o996992.ingest.sentry.io/5955471",
-    // We recommend adjusting this value in production, or using tracesSampler
-    // for finer control
-    tracesSampleRate: 0.5,
-}); */
 
 /**
  * @typedef {import('./types.js').user} user
@@ -42,7 +32,7 @@ const sqlite3 = require('sqlite3').verbose();
 //Database
 let db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
-        Sentry.captureException(err);
+        console.error(err);
     }
     console.log(chalk.blue('Connected to the database.'));
 });
@@ -58,7 +48,7 @@ let db = new sqlite3.Database('./database.db', (err) => {
         db.serialize(() => {
             db.get(`SELECT * FROM aircrafts WHERE livID = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -75,7 +65,7 @@ function GetAircrafts() {
         db.serialize(() => {
             db.all(`SELECT * FROM aircrafts`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -97,7 +87,7 @@ function CreateAircraft(livID, airID, livName, airName, publicName) {
         db.run(`INSERT INTO aircrafts(livID, airID, livName, airName, publicName) 
                 VALUES(?, ?, ?, ?, ?)`, [livID, airID, livName, airName, publicName], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -116,7 +106,7 @@ function CreateAircraft(livID, airID, livName, airName, publicName) {
         db.serialize(() => {
             db.run(`DELETE FROM aircrafts WHERE livID = ?`, [id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -138,13 +128,13 @@ function CreateAircraft(livID, airID, livName, airName, publicName) {
         db.serialize(() => {
             db.get(`SELECT * FROM events WHERE id = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     var eventsRow = row;
                     eventsRow.gates = [];
                     db.each(`SELECT gate, taken FROM gates WHERE eventID = ?`, [id], (err, row) => {
-                        Sentry.captureException(err);
+                        console.error(err);
                         eventsRow.gates.push(row);
                     }, function() {
                         resolve(eventsRow);
@@ -164,7 +154,7 @@ function GetEvents() {
         db.serialize(() => {
             db.all(`SELECT * FROM events`, (err, events) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     if (events.length == 0) {
                         resolve([])
@@ -174,7 +164,7 @@ function GetEvents() {
                             event.gates = [];
                             let gatesProcessed = 0;
                             db.each(`SELECT gate, taken FROM gates WHERE eventID = ?`, [event.id], (err, gate) => {
-                                Sentry.captureException(err);
+                                console.error(err);
                                 event.gates.push(gate)
                             }, function() {
                                 eventsProcessed ++;
@@ -207,14 +197,14 @@ function CreateEvent(title, body, arrAir, depAir, depTime, air, airName, server,
         db.run(`INSERT INTO events(title, body, arrAir, depAir, depTime, air, airName, server) 
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?)`, [title, body, arrAir, depAir, depTime, air, airName, server], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 var createdEvent = this.lastID;
                 gates.forEach(gate => {
                     db.run(`INSERT INTO gates(eventID, gate, taken) 
                             VALUES(?, ?, 0)`, [createdEvent, gate], function (err) {
-                        Sentry.captureException(err);
+                        console.error(err);
                     });
                 })
                 resolve(true);
@@ -233,7 +223,7 @@ function CreateEvent(title, body, arrAir, depAir, depTime, air, airName, server,
         db.serialize(() => {
             db.run(`DELETE FROM events WHERE id = ?`, [id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -255,7 +245,7 @@ function CreateEvent(title, body, arrAir, depAir, depTime, air, airName, server,
         db.serialize(() => {
             db.get(`SELECT * FROM pireps WHERE id = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -273,7 +263,7 @@ function GetPireps() {
         db.serialize(() => {
             db.all(`SELECT * FROM pireps`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -291,7 +281,7 @@ function GetPireps() {
         db.serialize(() => {
             db.all(`SELECT * FROM pireps WHERE author = ?`, [user], (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -322,7 +312,7 @@ function CreatePirep(vehicle, vehiclePublic, author, operator, depICAO, arrICAO,
         db.run(`INSERT INTO pireps(vehicle, vehiclePublic, author, operator, depICAO, arrICAO, route, flightTime, comments, status, fuel, filed, rejectReason, pirepImg)
                 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [vehicle, vehiclePublic, author, operator, depICAO, arrICAO, route, flightTime, comments, status, fuel, filed, null, (img ? img : null)], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -368,7 +358,7 @@ function CreatePirep(vehicle, vehiclePublic, author, operator, depICAO, arrICAO,
                 pirepImg = ?
                 WHERE id = ?`, [vehicle, vehiclePublic, author, operator, depICAO, arrICAO, route, flightTime, comments, status, fuel, filed, rejectReason, (img?img:null), id], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -389,7 +379,7 @@ function GetToken(token) {
         db.serialize(() => {
             db.get(`SELECT * FROM tokens WHERE token = ?`, [token], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -408,7 +398,7 @@ function CreateToken(token, user) {
         db.run(`INSERT INTO tokens (token, user) 
                 VALUES(?, ?)`, [token, user], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -427,7 +417,7 @@ function CreateToken(token, user) {
         db.serialize(() => {
             db.run(`DELETE FROM tokens WHERE user = ?`, [username], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -449,7 +439,7 @@ function GetUser(username) {
         db.serialize(() => {
             db.get(`SELECT * FROM users WHERE username = ?`, [username], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -467,7 +457,7 @@ function GetUsers() {
         db.serialize(() => {
             db.all(`SELECT * FROM users`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -497,7 +487,7 @@ function CreateUser(username, rank, manualRank, admin, password, display, profil
         db.run(`INSERT INTO users(username, rank, admin, password, display, profileURL, hours, created, llogin, cp, revoked, VANetID, manualRank) 
                 VALUES(?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [username, rank, admin, password, display, "https://icons.getbootstrap.com/assets/icons/person-circle.svg", hours, created, llogin, cp, revoked, VANetID, manualRank], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -539,7 +529,7 @@ function CreateUser(username, rank, manualRank, admin, password, display, profil
                 manualRank = ? 
                 WHERE username = ?`, [rank, admin, password, display, profileURL, hours, created, llogin, cp, revoked, VANetID, manualRank, username], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -558,7 +548,7 @@ function CreateUser(username, rank, manualRank, admin, password, display, profil
         db.serialize(() => {
             db.all(`DELETE FROM users WHERE username = ?`, [username], (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false);
                 } else {
                     resolve(true);
@@ -580,7 +570,7 @@ function GetOperatorByName(name) {
         db.serialize(() => {
             db.get(`SELECT * FROM operators WHERE name = ?`, [name], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -599,7 +589,7 @@ function GetOperatorByName(name) {
         db.serialize(() => {
             db.get(`SELECT * FROM operators WHERE id = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -618,7 +608,7 @@ function GetOperators() {
         db.serialize(() => {
             db.all(`SELECT * FROM operators`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -639,7 +629,7 @@ function CreateOperator(operator, self, code) {
         db.run(`INSERT INTO operators(name,self,code) 
                 VALUES(?, ?, ?)`, [operator, self ? self : 0, code], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -658,7 +648,7 @@ function CreateOperator(operator, self, code) {
         db.serialize(() => {
             db.run(`DELETE FROM operators WHERE id = ?`, [id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -679,7 +669,7 @@ function CreateOperator(operator, self, code) {
         db.serialize(() => {
             db.get(`SELECT * FROM routes WHERE id = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -698,7 +688,7 @@ function GetRouteByNum(num) {
         db.serialize(() => {
             db.get(`SELECT * FROM routes WHERE num = ?`, [num], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -716,7 +706,7 @@ function GetRoutes() {
         db.serialize(() => {
             db.all(`SELECT * FROM routes`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -743,7 +733,7 @@ function CreateRoute(id, num, ft, operator, aircraft, depICAO, arrICAO, aircraft
         db.run(`INSERT INTO routes(id, num, ft, operator, aircraft, depICAO, arrICAO, aircraftPublic, minRank) 
                 VALUES(?,?,?,?,?,?,?,?,?)`, [id, num, ft, operator, aircraft, depICAO, arrICAO, aircraftPublic, minRank], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -778,7 +768,7 @@ function CreateRoute(id, num, ft, operator, aircraft, depICAO, arrICAO, aircraft
                 minRank = ?
                 WHERE id = ?`, [num, ft, operator, aircraft, depICAO, arrICAO, aircraftPublic, minRank, id], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -797,7 +787,7 @@ function CreateRoute(id, num, ft, operator, aircraft, depICAO, arrICAO, aircraft
         db.serialize(() => {
             db.all(`DELETE FROM routes WHERE id = ?`, [id], (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true);
@@ -818,7 +808,7 @@ function GetNotifications(user){
         db.serialize(() => {
             db.all(`SELECT * FROM notifications WHERE user = ?`, [user], (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -843,7 +833,7 @@ function CreateNotification(user, title, desc, icon, timeStamp, link){
             db.run(`INSERT INTO notifications(user, title, desc, icon, timeStamp, link)
                     VALUES(?,?,?,?,?,?)`, [user, title, desc, icon, timeStamp, link], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -851,7 +841,7 @@ function CreateNotification(user, title, desc, icon, timeStamp, link){
             });
             db.run(`DELETE FROM notifications WHERE id IN (SELECT id FROM notifications ORDER BY id DESC LIMIT -1 OFFSET 5) AND user = ?`, [user], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 }
             })
         });
@@ -868,7 +858,7 @@ function CreateNotification(user, title, desc, icon, timeStamp, link){
         db.serialize(() => {
             db.run(`DELETE FROM notifications WHERE id = ?`, [id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(true)
                 }
@@ -887,7 +877,7 @@ function CreateNotification(user, title, desc, icon, timeStamp, link){
         db.serialize(() => {
             db.run(`DELETE FROM notifications WHERE user = ?`, [username], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -907,7 +897,7 @@ function CreateNotification(user, title, desc, icon, timeStamp, link){
         db.serialize(() => {
             db.all(`SELECT * FROM stats`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -926,7 +916,7 @@ function CreateNotification(user, title, desc, icon, timeStamp, link){
         db.serialize(() => {
             db.run(`DELETE FROM stats WHERE name = ?`, [name], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -950,7 +940,7 @@ function UpdateStat(name, newName, newValue){
                         value = ?
                         WHERE name = ?`, [newValue, name], (err) => {
                     if (err) {
-                        Sentry.captureException(err);
+                        console.error(err);
                         resolve(false)
                     } else {
                         resolve(true)
@@ -962,7 +952,7 @@ function UpdateStat(name, newName, newValue){
                         value = ?
                         WHERE name = ?`, [newName, newValue, name], (err) => {
                     if (err) {
-                        Sentry.captureException(err);
+                        console.error(err);
                         resolve(false)
                     } else {
                         resolve(true)
@@ -985,7 +975,7 @@ function GetRank(id){
         db.serialize(() => {
             db.get(`SELECT * FROM ranks WHERE label = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -1004,7 +994,7 @@ function GetRank(id){
         db.serialize(() => {
             db.all(`SELECT * FROM ranks`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -1023,7 +1013,7 @@ function GetRank(id){
         db.serialize(() => {
             db.run(`DELETE FROM ranks WHERE id = ?`, [id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1048,7 +1038,7 @@ function UpdateRank(name, newName, newMinH){
                     minH = ?
                     WHERE name = ?`, [newName, newMinH, name], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1069,7 +1059,7 @@ function UpdateRank(name, newName, newMinH){
     return new Promise((resolve, error) => {
         db.run(`INSERT INTO ranks(label, manual, minH) VALUES(?, ?,?)`, [label, manual, minH], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 error(err)
             } else {
                 resolve(this.lastID);
@@ -1088,7 +1078,7 @@ function GetSlots() {
         db.serialize(() => {
             db.all(`SELECT * FROM slots`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -1106,7 +1096,7 @@ function GetSlot(ID) {
         db.serialize(() => {
             db.get(`SELECT * FROM slots WHERE id = ?`, [ID], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -1143,7 +1133,7 @@ function GetSlotsWithRoutes(){
                     }
                 });
         } catch (err) {
-            Sentry.captureException(err);
+            console.error(err);
             reject(err);
         }
     })
@@ -1159,7 +1149,7 @@ function DeleteSlot(slot) {
         db.serialize(() => {
             db.run(`DELETE FROM slots WHERE id = ?`, [slot], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1186,7 +1176,7 @@ function UpdateSlot(id, route, newDepTime, newArrTime) {
                     arrTime = ?
                     WHERE id = ?`, [route, newDepTime, newArrTime, id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1209,7 +1199,7 @@ function CreateSlot(id, route, depTime, arrTime) {
     return new Promise((resolve, error) => {
         db.run(`INSERT INTO slots(route, depTime, arrTime) VALUES(?, ?, ?)`, [route, depTime, arrTime], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -1230,7 +1220,7 @@ function GetPPURL(username){
         db.serialize(() => {
             db.get(`SELECT profileURL FROM users WHERE username = ?`, [username], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -1249,7 +1239,7 @@ function GetPPURL(username){
         return new Promise((resolve, error) => {
             db.exec(query, function (err) {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1269,7 +1259,7 @@ function GetLinks() {
         db.serialize(() => {
             db.all(`SELECT * FROM links`, (err, rows) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(rows);
                 }
@@ -1288,7 +1278,7 @@ function DeleteLink(id) {
         db.serialize(() => {
             db.run(`DELETE FROM links WHERE id = ?`, [id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1308,7 +1298,7 @@ function CreateLink(title, url) {
     return new Promise((resolve, error) => {
         db.run(`INSERT INTO links(title, url) VALUES(?, ?)`, [title, url], function (err) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(false)
             } else {
                 resolve(true)
@@ -1328,7 +1318,7 @@ function CreateSession(pilot, route){
     return new Promise((resolve, error) => {
         db.run(`INSERT INTO flightSessions(pilot, route, aircraft, depTime, arrTime, active, state) VALUES(?, ?, ?, ?, ?, ?, ?)`, [pilot, route, null, null, 0, 1, "NI"], function (err,row) {
             if (err) {
-                Sentry.captureException(err);
+                console.error(err);
                 resolve(-1)
             } else {
                 resolve(this.lastID)
@@ -1346,7 +1336,7 @@ function GetSession(ID){
         db.serialize(() => {
             db.get(`SELECT * FROM flightSessions WHERE id = ?`, [ID], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -1364,7 +1354,7 @@ function GetSessionByPilot(pilot) {
         db.serialize(() => {
             db.all(`SELECT * FROM flightSessions WHERE pilot = ?`, [pilot], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     if(Array.isArray(row)){
                         resolve(row);
@@ -1403,7 +1393,7 @@ function UpdateSession(id, pilot, route, aircraft, depTime, arrTime, active, sta
                     state = ?
                     WHERE id = ?`, [pilot, route, aircraft, depTime, arrTime, active, state, id], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                     resolve(false)
                 } else {
                     resolve(true)
@@ -1423,7 +1413,7 @@ function DeleteSession(ID) {
         db.serialize(() => {
             db.run(`DELETE FROM flightSessions WHERE id = ?`, [ID], (err) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(true);
                 }
@@ -1443,7 +1433,7 @@ async function GetMultipliers(){
         db.serialize(()=>{
             db.all(`SELECT * FROM multi`, [], (err, row) =>{
                 if(err){
-                    Sentry.captureException(err);
+                    console.error(err);
                 }else{
                     resolve(row);
                 }
@@ -1462,7 +1452,7 @@ async function GetMultiplier(id){
         db.serialize(() => {
             db.get(`SELECT * FROM multi WHERE id = ?`, [id], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -1481,7 +1471,7 @@ async function GetMultiplierByLabel(label) {
         db.serialize(() => {
             db.get(`SELECT * FROM multi WHERE label = ?`, [label], (err, row) => {
                 if (err) {
-                    Sentry.captureException(err);
+                    console.error(err);
                 } else {
                     resolve(row);
                 }
@@ -1501,7 +1491,7 @@ async function CreateMulti(label, amount){
         db.serialize(() =>{
             db.run(`INSERT INTO multi (label, amount) VALUES(?, ?)`, [label, amount.toString()], (err) =>{
                 if(err){
-                    Sentry.captureException(err);
+                    console.error(err);
                 }else{
                     resolve(this.lastID)
                 }
@@ -1520,7 +1510,7 @@ async function DeleteMulti(id){
         db.serialize(() =>{
             db.get(`DELETE FROM multi WHERE id = ?`, [id], (err) =>{
                 if(err){
-                    Sentry.captureException(err);
+                    console.error(err);
                 }else{
                     resolve(true);
                 }
