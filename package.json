@@ -4,9 +4,9 @@
   "description": "A revolutionary crew center",
   "main": "server/index.js",
   "scripts": {
-    "dev": "nodemon server/index.js --verbose",
-    "start": "pm2 start server --name VACenter",
-    "local": "node server/index.js",
+    "dev": "nodemon server/manager.js --verbose",
+    "start": "pm2 start server/manager.js --name VACenter",
+    "local": "node server/manager.js",
     "noGitConfig": "git update-index --assume-unchanged server/config.json && git update-index --assume-unchanged server/vacenter.log",
     "showGitConfig": "git update-index --no-assume-unchanged server/config.json && git update-index --no-assume-unchanged server/vacenter.log"
   },

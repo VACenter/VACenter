@@ -219,9 +219,28 @@ function finish(){
                 if (this.readyState === this.DONE) {
                     console.log(this)
                     if(this.status == 200){
-                        setTimeout(() => {
-                            window.location.href = "/";
-                        }, 10000);
+                        let failTimes = 0;
+                        let checker = setInterval(() => {
+                            const options = {
+                                method: 'GET'
+                            };
+
+                            fetch('/', options).then(response => {
+                                if (response.status == 200) {
+                                    window.location.href = "/";
+                                } else {
+                                    if (failTimes > 30) {
+                                        console.error([response.status, response.statusText]);
+                                        clearInterval(checker);
+                                        alert("Restarting VACenter failed, please contact support.");
+                                    }
+                                }
+                            }).catch(err => {
+                                console.error(err);
+                                clearInterval(checker);
+                                alert("Restarting VACenter failed, please contact support.");
+                            })
+                        }, 2000);
                         document.getElementById("finalSetupBTN").setAttribute("disabled", "disabled");
                         document.getElementById("finalRestartBTN").setAttribute("disabled", "disabled");
                         document.getElementById("finalDescriptionTEXT").innerHTML = "Please wait..."

@@ -213,7 +213,7 @@ app.post("*", async (req, res, next)=>{
                     res.status(200);
                     res.render("setup/dirty/success.ejs");
                     await db.init();
-                    process.exit();
+                    process.send("restartReq");
                 }else{
                     res.status(400);
                     res.send("Missing information from form. Please go back, check the settings, and resubmit.");
@@ -264,7 +264,7 @@ app.post("*", async (req, res, next)=>{
                                     //Report to VACenter API
                                     const options = {
                                         method: 'POST',
-                                        url: `http://localhost:2600/v4/register`,
+                                        url: `https://v4.api.va-center.com/v4/register`,
                                         headers: {'Content-Type': 'x-www-form-urlencoded'},
                                         form:{
                                             acceptAnalytics: currentConfig.instance.analytics,
@@ -279,15 +279,16 @@ app.post("*", async (req, res, next)=>{
                                             res.status(500);
                                             res.send("Was unable to register with VACenter API.");
                                             console.error(error);
-                                            console.error([response.statusCode, response.statusMessage]);
+                                            if(response){
+                                                console.error([response.statusCode, response.statusMessage]);
+                                            }
                                         } else {
                                             const data = JSON.parse(body);
                                             currentConfig.ident = data.data.CCIdent;
-                                    config.update(currentConfig);
-                                    res.sendStatus(200);
-                                    process.exit();
+                                            config.update(currentConfig);
+                                            res.sendStatus(200);
+                                            process.send("restartReq")
                                         }
-
                                     });
                                 }
                             });
