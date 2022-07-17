@@ -3,7 +3,7 @@
         "current": "v4.0.1", 
          "list":[
              {
-                "semver": "v4.0.1",
+                "semver": "v4.0.0",
                 "betaDowngrade": null,
                 "filesChanged": ["server/perms.js"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
@@ -11,7 +11,7 @@
                 "filesRemoved": []
             },
             {
-                "semver": "v4.0.0",
+                "semver": "v4.1.0",
                 "betaDowngrade": "v4.0.0-rc.1",
                 "filesChanged": ["server/config.js"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
