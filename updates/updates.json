@@ -41,6 +41,7 @@
             },
             {
                 "semver": "v4.0.0-beta.2",
+                "prodUpgrade": null
                 "filesChanged": [".gitignore"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
