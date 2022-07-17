@@ -25,6 +25,7 @@
         "list":[
             {
                 "semver": "v4.0.0-beta.1",
+                "prodUpgrade": "v4.0.0",
                 "filesChanged": [".gitignore"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
@@ -32,6 +33,7 @@
             },
             {
                 "semver": "v4.0.0-rc.1",
+                "prodUpgrade": null,
                 "filesChanged": [".gitignore"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
