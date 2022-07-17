@@ -21,7 +21,7 @@
          ]
     },
     "beta": {
-        "current": "v4.0.0-beta.2",
+        "current": "v4.0.0-rc.1",
         "list":[
             {
                 "semver": "v4.0.0-beta.1",
