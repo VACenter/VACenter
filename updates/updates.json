@@ -1,7 +1,15 @@
 {
     "prod": {
-        "current": "v4.0.0", 
+        "current": "v4.0.1", 
          "list":[
+             {
+                "semver": "v4.0.1",
+                "betaDowngrade": null,
+                "filesChanged": ["server/perms.js"],
+                "sqlFile": "https://github.com/vacenter/vacenter",
+                "directoriesAdded": [],
+                "filesRemoved": []
+            },
             {
                 "semver": "v4.0.0",
                 "betaDowngrade": "v4.0.0-rc.1",
