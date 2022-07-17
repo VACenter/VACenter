@@ -31,7 +31,7 @@
                 "filesRemoved": []
             },
             {
-                "semver": "v4.0.0-beta.2",
+                "semver": "v4.0.0-rc.1",
                 "filesChanged": [".gitignore"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
