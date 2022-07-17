@@ -5,7 +5,7 @@
             {
                 "semver": "v4.0.0",
                 "betaDowngrade": "v4.0.0-rc.1",
-                "filesChanged": [],
+                "filesChanged": ["server/config.js"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
                 "filesRemoved": []
@@ -17,7 +17,7 @@
         "list":[
             {
                 "semver": "v4.0.0-beta.1",
-                "filesChanged": [],
+                "filesChanged": [".gitignore"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
                 "filesRemoved": []
