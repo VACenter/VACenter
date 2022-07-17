@@ -12,7 +12,7 @@
             },
             {
                 "semver": "v4.1.0",
-                "betaDowngrade": "v4.0.0-rc.1",
+                "betaDowngrade": "v4.1.0-rc.1",
                 "filesChanged": ["server/config.js"],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
