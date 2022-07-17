@@ -441,6 +441,37 @@ function createFunctions() {
             // Send the query to the DB
             const [results,fields] = await db.promise().query(q).catch(console.error);
 
+            for (result in results) {
+            // Include relation tables if any related
+              for (field in tables[dbTable].fields) {
+                 let fieldObj = tables[dbTable].fields[field];
+                 if (fieldObj.related && fieldObj.relation == "single") {
+
+                   let related = fieldObj.related;
+                   let target = results[result][field];
+                   let sql = `SELECT * FROM ${related} WHERE id=${target}`
+
+                   const q = { sql: sql };
+
+                   console.log(q);
+
+                   try {
+
+                     const [r,f] = await db.promise().query(q).catch(console.error);
+
+                     console.log(r);
+
+                     results[result][field] = r[0];
+
+                   } catch(e) {
+
+                     reject(e);
+
+                   }
+                 }
+              }
+            }
+
             resolve( { results: results, fields: fields } );
 
           } catch(e) {
