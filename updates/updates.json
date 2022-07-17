@@ -4,6 +4,7 @@
          "list":[
             {
                 "semver": "v4.0.0",
+                "betaDowngrade": "v4.0.0-rc.1"
                 "filesChanged": [],
                 "sqlFile": "https://github.com/vacenter/vacenter",
                 "directoriesAdded": [],
