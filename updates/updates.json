@@ -1,7 +1,6 @@
 [
     {
-        "number": "4.0.0",
-        "ghID": "",
+        "version": "v4.0.0-beta.1",
         "name": "VACenter 4",
         "date": "2022-07-31",
         "description": "VACenter 4 Beta 1",
