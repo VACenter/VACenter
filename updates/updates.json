@@ -1,6 +1,6 @@
 {
     "prod": {
-        "current": "v4.0.1", 
+        "current": "v4.0.0", 
          "list":[
              {
                 "semver": "v4.0.0",
