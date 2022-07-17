@@ -1,19 +1,26 @@
-[
-    {
-        "version": "v4.0.0-beta.1",
-        "name": "VACenter 4",
-        "date": "2022-07-31",
-        "description": "VACenter 4 Beta 1",
-        "beta": true,
-        "fileChanged": [
-
-        ],
-        "sqlFile": "https://raw.github.com/vacenter/vacenter",
-        "fileDeleted": [
-
-        ],
-        "directoriesAdded": [
-
+{
+    "prod": {
+        "current": "v4.0.0", 
+         "list":[
+            {
+                "semver": "v4.0.0",
+                "filesChanged": [],
+                "sqlFile": "https://github.com/vacenter/vacenter",
+                "directoriesAdded": [],
+                "filesRemoved": []
+            }
+         ]
+    },
+    "beta": {
+        "current": "v4.0.0-beta.1",
+        "list":[
+            {
+                "semver": "v4.0.0-beta.1",
+                "filesChanged": [],
+                "sqlFile": "https://github.com/vacenter/vacenter",
+                "directoriesAdded": [],
+                "filesRemoved": []
+            }
         ]
     }
-]
+}
