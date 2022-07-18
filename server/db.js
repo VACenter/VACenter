@@ -534,6 +534,30 @@ function createFunctions() {
 }
 
 /**
+ * Function to run raw SQL query on the DB. WARNING: No sanitisation is performed in this function. Use with caution.
+ * Destructive actions will be irreversible.
+ */
+functions.sql = (sql) => {
+  return new Promise(async (resolve, reject) => {
+
+      try {
+
+        // Send the query to the DB
+        const [results,fields] = await db.promise().query(sql).catch(console.error);
+
+        resolve( { results: results, fields: fields } );
+
+      } catch(e) {
+
+        reject(e);
+
+      }
+      
+  });
+
+}
+    
+/**
  * Function to drop all DB tables and clear the database. WARNING: This function is irreversible. Use with caution.
  */
 functions.drop = () => {
