@@ -12,7 +12,7 @@ console.file("vacenter.log");
 const mysql = require('mysql2');
 let db;
 
-// Modules for interacting with filesyste
+// Modules for interacting with filesystem
 const fs = require('fs');
 const path = require('path');
 
@@ -445,21 +445,19 @@ function createFunctions() {
             // Include relation tables if any related
               for (field in tables[dbTable].fields) {
                  let fieldObj = tables[dbTable].fields[field];
+
                  if (fieldObj.related && fieldObj.relation == "single") {
 
-                   let related = fieldObj.related;
+                   let related_table = fieldObj.related.table;
+                   let related_field = fieldObj.related.field;
                    let target = results[result][field];
-                   let sql = `SELECT * FROM ${related} WHERE id=${target}`
+                   let sql = `SELECT * FROM ${related_table} WHERE ${related_field} = ?`
 
-                   const q = { sql: sql };
-
-                   console.log(q);
+                   const q = { sql: sql, values: [target] };
 
                    try {
 
                      const [r,f] = await db.promise().query(q).catch(console.error);
-
-                     console.log(r);
 
                      results[result][field] = r[0];
 
@@ -469,6 +467,39 @@ function createFunctions() {
 
                    }
                  }
+
+                 if (fieldObj.related && fieldObj.relation == "multiple") {
+
+                   let related_table = fieldObj.related.table;
+                   let related_field = fieldObj.related.field;
+                   let target = results[result][field];
+                   let list = [];
+
+                   let targets = JSON.parse(target);
+
+                   for (id of targets) {
+
+                     let sql = `SELECT * FROM ${related_table} WHERE ${related_field} = ?`
+
+                     const q = { sql: sql, values: [ id ] };
+
+                     try {
+
+                       const [r,f] = await db.promise().query(q).catch(console.error);
+
+                       list.push(r[0]);
+
+                     } catch(e) {
+
+                       reject(e);
+
+                     }
+                   }
+
+                   results[result][field] = list;
+
+                }
+
               }
             }
 

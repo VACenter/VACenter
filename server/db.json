@@ -36,7 +36,7 @@
 				"flags": "NOT NULL",
 				"default": 0,
 				"transform": null,
-				"related": "ranks",
+				"related": { "table": "ranks", "field": "id" },
 				"relation": "single"
 			},
 			"callsign": {
@@ -108,7 +108,9 @@
 				"type": "varchar(10000)",
 				"flags": "NOT NULL",
 				"default": "'[]'",
-				"transform": null
+				"transform": null,
+                                "related": { "table": "aircraft", "field": "aircraftID" },
+                                "relation": "multiple"
 			},
 			"flightTime": {
 				"type": "bigint",
