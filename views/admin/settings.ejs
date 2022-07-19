@@ -30,7 +30,24 @@
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade p-3 show active" id="nav-updater" role="tabpanel" aria-labelledby="nav-updater-tab">Needs work</div>
+        <div class="tab-pane fade p-3 show active" id="nav-updater" role="tabpanel" aria-labelledby="nav-updater-tab">
+            <h3>Updater</h3><br><br>
+            <form class="form-control p-3" method="POST" action="/api/updates/beta">
+                <h5>Beta Program</h5>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" name="updateBetaSwitch" id="updateBetaSwitch" <%if(betaChange[0] == true){%>checked<%}%> <%if(betaChange[1] == false){%>disabled<%}%>>
+                    <label class="form-check-label" for="updateBetaSwitch">Recieve Beta updates</label>
+                    <% if(betaChange[1] == false){%><p>You can not change the beta status until a new version is released.</p><%}%>
+                </div>
+                <br>
+                <button class="btn btn-primary">Update Setting</button>
+            </form><br><br>
+            <div class="form-control p-3">
+                <h5>Check for Updates</h5>
+                <button onclick="checkForUpdates();" class="btn btn-primary">Check for Updates</button>
+                <p class="d-none" id="updateProgress"><strong>Update Status:</strong> <span id="updateProgressMsg">Sam was here</span></p>
+            </div>
+        </div>
         <div class="tab-pane fade p-3" id="nav-customlinks" role="tabpanel" aria-labelledby="nav-customlinks-tab">
             <h3>Custom Links<button class="btn btn-primary mx-3" data-bs-toggle="modal" data-bs-target="#newLink"><i class="bi bi-plus-circle-fill"></i>
                 Create new Link</button></h3>
@@ -158,6 +175,95 @@
     <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
     <script src="/public/scripts/settings.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let cookieList = document.cookie.split("; ");
+            let cookie = "";
+            cookieList.forEach(lcookie => {
+                if (lcookie.slice(0, 17) == "vacenterAUTHTOKEN") {
+                    cookie = lcookie.split("=")[1];
+                }
+            })    
+        var socket = io({
+                auth: {
+                    token: cookie
+                }
+            });
+
+        function checkForUpdates(){
+            swal({
+                title: "Are you sure?",
+                text: "Are you sure you want to check for updates?",
+                icon: "warning",
+                buttons: { 'no': "No", yes: { closeModal: false, text: 'Yes', className: 'bg-danger' } },
+                dangerMode: true
+            }).then((value => {
+                if (value == 'yes') {
+                    socket.emit('checkUpdate');
+                }
+            }))
+        }
+
+        socket.on('checkUpdateRes', (data)=>{
+            if(data[0] == true){
+                swal({
+                    title: "Success!",
+                    text: `${data[1]} is available for download. Do you want to proceed with the install?`,
+                    icon: "info",
+                    buttons: { 'no': "No", yes: { closeModal: false, text: 'Yes'} },
+                }).then((value => {
+                    if (value == 'yes') {
+                        swal({
+                            title: "Are you sure?",
+                            text: `Are you sure you want to install VACenter ${data[1]}?`,
+                            icon: "warning",
+                            buttons: { 'no': "No", yes: {text: 'Yes', className: 'bg-danger' } },
+                            dangerMode: true
+                        }).then((value => {
+                            if (value == 'yes') {
+                                socket.emit("update", data[1]);
+                            }
+                        }))
+                    }
+                }))
+            }else{
+                switch(data[1]){
+                    case "noPerms":
+                        swal("Oh no!", "You can't do that because you don't have permission", 'error');
+                        break;
+                    case "noUser":
+                        swal("Oh no!", "You can't do that because you aren't signed in. It's possible the server just restarted.", 'error');
+                        break;
+                    case "noUpdate":
+                        swal("Update", "You are up to date!", "info");
+                        break;
+                    default:
+                        swal("Oh no!", "An unknown error occured", "error");
+                        break;
+                }
+            }
+        })
+        socket.on('updateRes', (data)=>{
+            if(data[0] == false){
+                swal("Update failed", data[1], 'error');
+            }else{
+                document.getElementById('updateProgress').classList.remove('d-none');
+                const updateProgress = document.getElementById("updateProgressMsg");
+                switch (data[1]) {
+                    case "downloadingUpdateFile":
+                        updateProgress.innerHTML = "Downloading update file...";
+                        break;
+                    case "downloadSQL":
+                        updateProgress.innerHTML = "Downloading SQL file...";
+                        break;
+                    default:
+                        updateprogress.innerHTML = "Unknown";
+                        break;
+                }
+            }
+        })
+    
+    </script>
 </body>
 
 </html>

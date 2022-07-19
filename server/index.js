@@ -13,17 +13,25 @@ process.on('uncaughtException', (err) => {
 
 });
 
+//Updates
+let updateInProgress = false;
+
 //Dependancies
 const express = require('express');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
+const {Server} = require('socket.io');
 const perms = require("./perms.js");
 const config = require('./config.js');
 const db = require('./db.js');
+const update = require('./../updates/update.js');
 const request = require('request');
+const fetch = require('node-fetch');
 const morgan = require("morgan");
 const cors = require("cors");
+const { checkBetaChange } = require("./../updates/update.js");
 
 //Config
 const launchConfig = config.get();
@@ -60,12 +68,40 @@ checkNormalSetup();
 // Token Store
 const authenticationTokens = new Map();
 
-//Express
+//Express, HTTP, Socket.IO
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
+io.use(async (socket, next) => {
+    console.log(socket.handshake.auth)
+    const cookie = socket.handshake.auth.token;
+    if (cookie) {
+        if (authenticationTokens.has(cookie)) {
+            const sessionInfo = authenticationTokens.get(cookie);
+            let error = false;
+            let response;
+            try {
+                response = await db.users.get({pilotID: sessionInfo.pilotID});
+            } catch (err) {
+                error = true;
+                next(new Error("Failed Authentication"));
+            }
+            if(error == false){
+                socket.data.user = response.results[0];
+                next();
+            }
+        } else {
+            next(new Error("Failed Authentication"));
+        }
+    } else {
+        next(new Error("Failed Authentication"));
+    }
+});
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
@@ -81,7 +117,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.listen(launchConfig.instance.port, ()=>{
+server.listen(launchConfig.instance.port, ()=>{
     console.log(`VACenter listening on port ${launchConfig.instance.port}`)
 });
 
@@ -624,6 +660,39 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             } break;
+            case "api/updates/beta": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    const userPerms = new perms.Perm(pilot.permissions);
+                    if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                        const canChange = await update.checkBetaChange();
+                        if (canChange[1] === true){
+                            if(req.body.updateBetaSwitch){
+                                let tempConfig = config.get();
+                                tempConfig.instance.betaEnrolled = true;
+                                config.update(tempConfig);
+                                res.status(200);
+                                res.redirect("/admin/settings");
+                            }else{
+                                let tempConfig = config.get();
+                                tempConfig.instance.betaEnrolled = false;
+                                config.update(tempConfig);
+                                res.status(200);
+                                res.redirect("/admin/settings");
+                            }
+                        }else{
+                            res.status(403);
+                            res.send("Unable to change beta due to versioning restrictions.");
+                        }
+                    }else{
+                        res.redirect("/admin");
+                    }
+                }else{
+                    res.clearCookie("vacenterAUTHTOKEN");
+                    res.redirect("/");
+                }
+            }
+            break;
             default:
                 res.status(404);
                 res.send("API path not found.")
@@ -938,9 +1007,11 @@ app.get("*", async (req,res)=>{
                     } else {
                         const userPerms = new perms.Perm(user.permissions);
                         if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
+                            console.log(await update.checkBetaChange())
                             res.render("admin/settings", {
                                 user: parsedUser,
-                                userPerms: userPerms
+                                userPerms: userPerms,
+                                betaChange: await update.checkBetaChange()
                             })
                         } else {
                             if (user.permissions != 0) {
@@ -976,6 +1047,108 @@ app.get("*", async (req,res)=>{
         //Reset PWD Page
     }
 })
+
+//SOCKET.IO
+io.on('connection', (socket) => {
+    console.log("NEW CONN");
+    socket.on('checkUpdate', async ()=>{
+        console.log("Check update req")
+        if(socket.data.user){
+            if (socket.data.user.permissions){
+                const userPerms = new perms.Perm(socket.data.user.permissions);
+                if(userPerms.has('MANAGE_SITE') || userPerms.has("SUPER_USER")){
+                    const candidates = await update.checkNewVersion();
+                    if(candidates[0] == true){
+                        let candidate = (candidates[1].sort(update.updateSort))[0];
+                        socket.emit('checkUpdateRes', [true, candidate.semver]);
+                    }else{
+                        socket.emit('checkUpdateRes', [false, 'noUpdate']);
+                    }
+                }else{
+                    socket.emit('checkUpdateRes', [false, 'noPerms']);
+                }
+            }else{
+                socket.emit('checkUpdateRes', [false, 'noUser']);
+            }
+        }else{
+            socket.emit("checkUpdateRes", [false, 'idk'])
+        }
+    })
+    socket.on('update', async (vnum) => {
+        console.log("Update req")
+        if (socket.data.user) {
+            if (socket.data.user.permissions) {
+                const userPerms = new perms.Perm(socket.data.user.permissions);
+                if (userPerms.has('MANAGE_SITE') || userPerms.has("SUPER_USER")) {
+                    const candidates = await update.checkNewVersion();
+                    if (candidates[0] == true) {
+                        let candidate = (candidates[1].sort(update.updateSort))[0];
+                        if(candidate.semver == vnum){
+                            const configFile = config.get();
+                            //The real business
+                            updateInProgress = true;
+
+                            //Download Update File
+                            socket.emit('updateRes', [true, 'downloadingUpdateFile']);
+                            const updateFile = await update.getUpdate(configFile.instance.betaEnrolled ? "beta":"prod", candidate.semver);
+                            if(updateFile){
+                                //Download SQL
+                                socket.emit('updateRes', [true, 'downloadSQL']);
+                                let url = updateFile.sqlFile;
+
+                                let options = {
+                                    method: 'GET'
+                                };
+                                let sqlDownloadError = false;
+                                try{
+                                    //@ts-ignore
+                                    var sqlFile = await fetch(url, options);
+                                }catch(err){
+                                    sqlDownloadError = true;
+                                    console.error(err);
+                                }
+                                if(sqlDownloadError == false){
+                                    const SQL = await sqlFile.text();
+                                    const Queries = SQL.split('\n');
+                                    //Execute SQL
+                                    socket.emit('updateRes', [true, 'executeSQL']);
+                                    let SQLExecutionFailure = false;
+                                    Queries.forEach(query =>{
+                                        try{
+                                            db.sql(query);
+                                        }catch(err){
+                                            SQLExecutionFailure = true;
+                                            console.error(err);        
+                                        }
+                                    });
+                                    if(SQLExecutionFailure === false){
+                                        //Delete Files
+                                        socket.emit('updateRes', [true, 'deleteFiles']);
+                                        
+                                    }
+                                }
+                            }else{
+
+                            }
+
+
+                        }else{
+                            socket.emit("updateRes", [false, 'badAlign']);
+                        }
+                    } else {
+                        socket.emit('updateRes', [false, 'noUpdate']);
+                    }
+                } else {
+                    socket.emit('updateRes', [false, 'noPerms']);
+                }
+            } else {
+                socket.emit('updateRes', [false, 'noUser']);
+            }
+        } else {
+            socket.emit("updateRes", [false, 'idk'])
+        }
+    })
+});
 
 //Authentication
 

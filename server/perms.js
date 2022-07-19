@@ -1,6 +1,6 @@
 // Console Module
-require("./console.js");
-console.file("vacenter.log");
+//require("./console.js");
+//console.file("vacenter.log");
 
 /*****
  * 

@@ -14,7 +14,7 @@
                 "semver": "v4.1.0",
                 "betaDowngrade": "v4.1.0-rc.1",
                 "filesChanged": ["server/config.js"],
-                "sqlFile": "https://github.com/vacenter/vacenter",
+                "sqlFile": "https://raw.githubusercontent.com/VACenter/VACenter/VACenter-4/updates/demo.sql",
                 "directoriesAdded": [],
                 "filesRemoved": []
             }
