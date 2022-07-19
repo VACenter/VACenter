@@ -459,7 +459,11 @@ function createFunctions() {
 
                      const [r,f] = await db.promise().query(q).catch(console.error);
 
-                     results[result][field] = r[0];
+                     if (r.length > 0) {
+                       results[result][field] = r[0];
+                     } else {
+                       results[result][field] = null;
+                     }
 
                    } catch(e) {
 
@@ -487,7 +491,11 @@ function createFunctions() {
 
                        const [r,f] = await db.promise().query(q).catch(console.error);
 
-                       list.push(r[0]);
+                       if (r.length > 0) {
+                         list.push(r[0]);
+                       } else {
+                         list.push(null);
+                       }
 
                      } catch(e) {
 
