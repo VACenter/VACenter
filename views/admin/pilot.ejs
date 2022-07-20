@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adminstration | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <%- include('../components/head')%>
+</head>
+
+<body class="p-2 p-md-5 pt-4">
+    <%- include('../components/nav')%>
+        
+
+            <div class="mt-5">
+                <div class="px-4 py-5 my-5 text-center text-light rounded position-relative"
+                    style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('<%= target.banner ? target.banner : config.customisation.bg %>'); background-position: center; background-size: cover;">
+                    <img class="d-block mx-auto mb-4 rounded-circle border border-light border-3 bg-light" style="object-fit: cover;"
+                        src="<%= target.profilePicture ? target.profilePicture : '/public/images/default.jpg' %>" alt="" width="72"
+                        height="72">
+                    <h1 class="display-5 fw-bold">
+                        <%= target.callsign %>
+                    </h1>
+                    <div class="col-lg-6 mx-auto">
+                        <p class="lead mb-4">
+                                <%= target.name%>
+                        </p>
+                    </div>
+                </div>
+                <h2><i class="bi bi-bar-chart"></i> Stats</h2>
+                <hr>
+                <ul style="list-style-type: none;" class="fs-5">
+                    <li>
+                        <span class="fw-bold"><i class="bi bi-clock-history"></i> Hours:</span> <%= target.hours%>
+                    </li>
+                    <li>
+                        <span class="fw-bold"><i class="bi bi-file-earmark-text"></i> PIREPs:</span> Soon<i class="bi bi-badge-tm"></i>
+                    </li>
+                    <li>
+                        <span class="fw-bold"><i class="bi bi-arrow-up-circle"></i> Rank:</span> <%= target.rank.label%></i>
+                    </li>
+                </ul>
+                <br>
+                <h2><i class="bi bi-person"></i> Personalisation</h2>
+                <hr>
+                <form action="/api/pilots/callsign" method="POST">
+                    <h4>Change Callsign</h4>
+                    <input class="d-none" type="text" value="<%= target.pilotID%>" name="pilot">
+                    <input class="form-control" type="text" require value="<%= target.callsign%>" name="callsign"><br>
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-arrow-right-circle-fill"></i> Change Callsign</button>
+                </form>
+                <br>
+                <h2><i class="bi bi-shield-shaded"></i> Security</h2>
+                <hr>
+                <p><span class="fw-bold">PilotID:</span> <%= target.pilotID%></p>
+                <form action="/api/pilots/resetPWD" method="POST">
+                    <input class="d-none" type="text" value="<%= target.pilotID%>" name="pilot">
+                    <button class="btn btn-danger" type="submit"><i class="bi bi-arrow-clockwise"></i> Reset Password</button>
+                </form>
+                
+                <% if(userPerms.has('SUPER_USER')){%>
+                    <br>
+                    <h2><i class="bi bi-ui-checks"></i> Permissions</h2>
+                    <hr>
+                    <form action="/api/pilots/permissions" method="POST">
+                        <input class="d-none" type="text" value="<%= target.pilotID%>" name="pilot">
+                        <div class="row row-cols-1 row-cols-xl-5 row-cols-lg-4 row-cols-md-3 g-3">
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_aircraft" id="manage_aircraft" <% if(targetPerms.has("MANAGE_AIRCRAFT")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_aircraft"><i class="bi bi-airplane-fill"></i> Manage Aircraft</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_route" id="manage_route" <% if(targetPerms.has("MANAGE_ROUTE")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_route"><i class="bi bi-arrow-left-right"></i> Manage Routes</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_pirep" id="manage_pirep" <% if(targetPerms.has("MANAGE_PIREP")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_pirep"><i class="bi bi-file-earmark-text"></i> Manage PIREPs</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_event" id="manage_event" <% if(targetPerms.has("MANAGE_EVENT")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_event"><i class="bi bi-calendar-date"></i> Manage Events</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_loa" id="manage_loa" <% if(targetPerms.has("MANAGE_LOA")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_loa"><i class="bi bi-calendar-range"></i> Manage LOA</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_rank" id="manage_rank" <% if(targetPerms.has("MANAGE_RANK")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_rank"><i class="bi bi-arrow-up-circle"></i> Manage Ranks</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_codeshare" id="manage_codeshare" <% if(targetPerms.has("MANAGE_CODESHARE")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_codeshare"><i class="bi bi-building"></i> Manage Codeshare</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_pilot" id="manage_pilot" <% if(targetPerms.has("MANAGE_PILOT")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_pilot"><i class="bi bi-people"></i> Manage Pilots</label>
+                            </div>
+                            <div class="col text-center px-3">
+                                <input type="checkbox" class="btn-check" name="manage_site" id="manage_site" <% if(targetPerms.has("MANAGE_SITE")){%>checked<%}%> autocomplete="off">
+                                <label class="btn btn-primary w-100" for="manage_site"><i class="bi bi-terminal"></i> Manage Site</label>
+                            </div>
+                        </div>
+                        <br>
+                        <button class="btn btn-dark ms-5" type="submit"><i class="bi bi-check-circle"></i> Confirm Permissions</button>
+                    </form>
+                <%}%>
+            </div>
+
+            <%- include('../components/scripts')%>
+                <script src="/public/scripts/progress.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+                <script>
+                    (function () {
+                        'use strict'
+
+                        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                        var forms = document.querySelectorAll('.needs-validation')
+
+                        // Loop over them and prevent submission
+                        Array.prototype.slice.call(forms)
+                            .forEach(function (form) {
+                                form.addEventListener('submit', function (event) {
+                                    if (!form.checkValidity()) {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                    }
+
+                                    form.classList.add('was-validated')
+                                }, false)
+                            })
+                    })();
+    </script>
+</body>
+
+</html>

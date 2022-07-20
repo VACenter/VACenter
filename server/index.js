@@ -31,7 +31,7 @@ const request = require('request');
 const fetch = require('node-fetch');
 const morgan = require("morgan");
 const cors = require("cors");
-const { checkBetaChange } = require("./../updates/update.js");
+const utils = require("./utils.js");
 
 //Config
 const launchConfig = config.get();
@@ -223,6 +223,27 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
             } break;
+            case "api/pilots/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.users.get({}).then((result, err) => {
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            }
+            break;
             default:
                 res.status(404);
                 res.send("API path not found.");
@@ -272,6 +293,7 @@ app.post("*", async (req, res, next)=>{
                     perm.set("MANAGE_PILOT");
                     perm.set("MANAGE_LOA");
                     perm.set("MANAGE_RANK");
+                    perms.set("MANAGE_CODESHARE");
                     db.users.create({
                         pilotID: req.body.defaultUser,
                         name: "Default User",
@@ -335,6 +357,37 @@ app.post("*", async (req, res, next)=>{
                     res.send("Missing information from form. Please go back, check the settings, and resubmit.");
                 }
                 }break;
+            case "api/resetForce": {
+                if(req.body.pwd){
+                    const pilot = await authenticate(req);
+                    if(pilot){
+                        if(pilot.changePWD == 1){
+                            db.users.update({
+                                fields: {
+                                    password: bcrypt.hashSync(req.body.pwd, 10),
+                                    changePWD: 0
+                                },
+                                where: {
+                                    field: "pilotID",
+                                    operator: "=",
+                                    value: pilot.pilotID
+                                }
+                            });
+                            res.status(200);
+                            res.clearCookie('vacenterAUTHTOKEN');
+                            res.redirect("/login");
+                        }else{
+                            res.status(403);
+                            res.send("Not needed. Please use standard password reset.");
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                }else{
+                    res.sendStatus(400);
+                }
+            }break;
             case "api/login": {
                 if(req.body.pilotID && req.body.pwd){
                     const pilot = (await db.users.get({
@@ -474,6 +527,204 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             }break;
+            case "api/pilots/resetPWD": {
+                if (req.body.pilot) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_PILOT") || userPerms.has("SUPER_USER")) {
+                            if((await db.users.get({pilotID: req.body.pilot})).results.length > 0){
+                                const target = (await db.users.get({pilotID: req.body.pilot})).results[0];
+                                let newPassword = utils.randomString(25);
+                                target.password = bcrypt.hashSync(newPassword, 10);
+                                target.changePWD = 1;
+                                authenticationTokens.forEach(token =>{
+                                    if(token.pilotID == target.pilotID){
+                                        authenticationTokens.delete(token.token);
+                                    }
+                                })
+                                db.users.update({
+                                    fields: {
+                                        password: target.password,
+                                        changePWD: target.changePWD
+                                    },
+                                    where: {
+                                        field: "pilotID",
+                                        operator: "=",
+                                        value: target.pilotID
+                                    }
+                                });
+                                res.status(200);
+                                res.send(`This user's password is now: ${newPassword}, they must change it on next login.`);
+                            }else{
+                                res.status(404);
+                                res.send("Unknown target");
+                            }
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit users.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            }break;
+            case "api/pilots/permissions": {
+                if (req.body.pilot) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("SUPER_USER")) {
+                            if ((await db.users.get({ pilotID: req.body.pilot })).results.length > 0) {
+                                const target = (await db.users.get({ pilotID: req.body.pilot })).results[0];
+                                const prevPerms = new perms.Perm(target.permissions);
+                                const targetPermissions = new perms.Perm();
+                                
+                                if(req.body.manage_aircraft) targetPermissions.set('MANAGE_AIRCRAFT');
+                                if (req.body.manage_route) targetPermissions.set('MANAGE_ROUTE');
+                                if (req.body.manage_pirep) targetPermissions.set('MANAGE_PIREP');
+                                if (req.body.manage_event) targetPermissions.set('MANAGE_EVENT');
+                                if (req.body.manage_loa) targetPermissions.set('MANAGE_LOA');
+                                if (req.body.manage_rank) targetPermissions.set('MANAGE_RANK');
+                                if (req.body.manage_codeshare) targetPermissions.set('MANAGE_CODESHARE');
+                                if (req.body.manage_pilot) targetPermissions.set('MANAGE_PILOT');
+                                if (req.body.manage_site) targetPermissions.set('MANAGE_SITE');
+                                if (prevPerms.has('SUPER_USER')) targetPermissions.set('SUPER_USER');
+
+                                db.users.update({
+                                    fields: {
+                                        permissions: targetPermissions.value()
+                                    },
+                                    where: {
+                                        field: "pilotID",
+                                        operator: "=",
+                                        value: target.pilotID
+                                    }
+                                });
+                                res.status(200);
+                                res.redirect(`/admin/pilot/view?id=${target.pilotID}`)
+                            } else {
+                                res.status(404);
+                                res.send("Unknown target");
+                            }
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit users.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
+            case "api/pilots/callsign": {
+                if (req.body.pilot && req.body.callsign) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PILOT")) {
+                            if ((await db.users.get({ pilotID: req.body.pilot })).results.length > 0) {
+                                const target = (await db.users.get({ pilotID: req.body.pilot })).results[0];
+                                db.users.update({
+                                    fields: {
+                                        callsign: req.body.callsign.toString()
+                                    },
+                                    where: {
+                                        field: "pilotID",
+                                        operator: "=",
+                                        value: target.pilotID
+                                    }
+                                });
+                                res.status(200);
+                                res.redirect(`/admin/pilot/view?id=${target.pilotID}`)
+                            } else {
+                                res.status(404);
+                                res.send("Unknown target");
+                            }
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit users.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
+            case "api/pilots/new": {
+                if (req.body.pilotCallsign && req.body.pilotName && req.body.pilotHours) {
+                    const user = await authenticate(req);
+                    if (user) {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PILOT")) {
+                            const loginInfo = {
+                                pid: await generateValidPID(),
+                                password: utils.randomString(50)
+                            }
+                            //Permissions
+                            const targetPermissions = new perms.Perm(0);
+                            if(userPerms.has("SUPER_USER")) {
+                                if (req.body.manage_aircraft) targetPermissions.set('MANAGE_AIRCRAFT');
+                                if (req.body.manage_route) targetPermissions.set('MANAGE_ROUTE');
+                                if (req.body.manage_pirep) targetPermissions.set('MANAGE_PIREP');
+                                if (req.body.manage_event) targetPermissions.set('MANAGE_EVENT');
+                                if (req.body.manage_loa) targetPermissions.set('MANAGE_LOA');
+                                if (req.body.manage_rank) targetPermissions.set('MANAGE_RANK');
+                                if (req.body.manage_codeshare) targetPermissions.set('MANAGE_CODESHARE');
+                                if (req.body.manage_pilot) targetPermissions.set('MANAGE_PILOT');
+                                if (req.body.manage_site) targetPermissions.set('MANAGE_SITE');
+                            }
+                            //Rank
+                            let rankID = 0;
+                            let manualRank = false;
+                            if(req.body.manualRank){
+                                manualRank = true;
+                                rankID = req.body.rank ? parseInt(req.body.rank) : 0;
+                            }else{
+                                rankID = await determineRank(parseFloat(req.body.pilotHours));
+                            }
+                            
+                            db.users.create({
+                                pilotID: loginInfo.pid,
+                                name: req.body.pilotName,
+                                password: bcrypt.hashSync(loginInfo.password, 10),
+                                rank: rankID,
+                                manualRank: manualRank ? 1 : 0,
+                                callsign: req.body.pilotCallsign,
+                                permissions: targetPermissions.value()
+                            }).then((result, err) => {
+                                if(err){
+                                    console.error(err);
+                                    res.status(500);
+                                    res.send("Internal Error");
+                                }else{
+                                    res.status(200);
+                                    res.send(`Success! The user was created! Here are their credentials (Password must be changed on login): PilotID: ${loginInfo.pid}, PWD: ${loginInfo.password}`)
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit users.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            }break;
             case "api/ranks/new": {
                 if (req.body.rankName && (req.body.manualRank || req.body.rankHours)) {
                     const pilot = await authenticate(req);
@@ -597,7 +848,6 @@ app.post("*", async (req, res, next)=>{
                         const userPerms = new perms.Perm(pilot.permissions);
                         if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
                             const hookEvents = [];
-                            console.log(req.body)
                             if(Array.isArray(req.body.hookEvents)) {
                                 req.body.hookEvents.forEach(event => {
                                     hookEvents.push(event);
@@ -852,6 +1102,49 @@ app.delete("*", async (req, res, next) => {
                     res.send("Missing Rank ID");
                 }
             } break;
+            case "api/pilots/revoke": {
+                if (req.body.userID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PILOT")) {
+                            if ((await db.users.get({ pilotID: req.body.userID })).results.length > 0) {
+                                const target = (await db.users.get({ pilotID: req.body.userID })).results[0];
+                                //const targetPerms = new perms.Perm(target.permissions);
+                                if(target.permissions == 0 || (target.permissions > 0 && userPerms.has("SUPER_USER"))){
+                                    db.users.update({
+                                        fields: {
+                                            revoked: target.revoked == 1 ? 0 : 1
+                                        },
+                                        where: {
+                                            field: "pilotID",
+                                            operator: "=",
+                                            value: target.pilotID
+                                        }
+                                    });
+                                    res.sendStatus(200);
+                                }else{
+                                    res.status(403);
+                                    res.send("Not authorised to edit users.")
+                                }
+                                
+                            } else {
+                                res.status(404);
+                                res.send("Unknown target");
+                            }
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit users.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
             default:
                 res.status(404);
                 res.send("API path not found.");
@@ -878,16 +1171,15 @@ app.get("*", async (req,res)=>{
     const currentConfig = config.get();
     const cookies = getAppCookies(req);
     if(req.path != "/resetPWD"){
-        console.log(req.path)
         const user = await authenticate(req);
         const parsedUser = user ? Object.create(user) : null;
         if(parsedUser){
             delete parsedUser['password'];
-            delete parsedUser['changePWD'];
-            delete parsedUser['revoked'];
         }
-        if(user == false){
+        if(!user && cookies.vacenterAUTHTOKEN){
             res.clearCookie("vacenterAUTHTOKEN").redirect(req.path);
+        }else if (user && parsedUser.changePWD == 1){
+            res.redirect("/resetPWD");
         }else{
             switch (req.path) {
                 case "/":
@@ -1001,13 +1293,63 @@ app.get("*", async (req,res)=>{
                         }
                     }
                     break;
+                case "/admin/pilot":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_PILOT") || userPerms.has("SUPER_USER")) {
+                            res.render("admin/pilots", {
+                                user: parsedUser,
+                                userPerms: userPerms,
+                                ranks: (await db.ranks.get({})).results
+                            })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/pilot/view":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_PILOT") || userPerms.has("SUPER_USER")) {
+                            if(req.query.id){
+                                if((await db.users.get({pilotID: req.query.id})).results.length > 0){
+                                    const targetUser = await db.users.get({pilotID: req.query.id});
+                                    res.render("admin/pilot", {
+                                        user: parsedUser,
+                                        userPerms: userPerms,
+                                        target: targetUser.results[0],
+                                        targetPerms: new perms.Perm(targetUser.results[0].permissions),
+                                        ranks: (await db.ranks.get({})).results
+                                    })
+                                }else{
+                                    res.sendStatus(404);
+                                }
+                            }else{
+                                res.sendStatus(400);
+                            }
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
                 case "/admin/settings":
                     if (user == null) {
                         res.redirect("/login");
                     } else {
                         const userPerms = new perms.Perm(user.permissions);
                         if (userPerms.has("MANAGE_SITE") || userPerms.has("SUPER_USER")) {
-                            console.log(await update.checkBetaChange())
                             res.render("admin/settings", {
                                 user: parsedUser,
                                 userPerms: userPerms,
@@ -1045,6 +1387,18 @@ app.get("*", async (req,res)=>{
         }
     }else{
         //Reset PWD Page
+        const user = await authenticate(req);
+        const parsedUser = user ? Object.create(user) : null;
+        if (parsedUser) {
+            delete parsedUser['password'];
+        }
+        if (!user) {
+            res.clearCookie("vacenterAUTHTOKEN").redirect("/login");
+        }else{
+            res.render("resetPWD", {
+                user: parsedUser
+            })
+        }
     }
 })
 
@@ -1163,8 +1517,11 @@ async function authenticate(req){
             const pilot = (await db.users.get({
                 pilotID: pilotID
             })).results[0];
-
-            return pilot;
+            if(pilot.revoked == 1){
+                return false;   
+            }else{
+                return pilot;
+            }
 
         }else{
             return false;    
@@ -1208,3 +1565,40 @@ function makeid(length) {
 function random(min, max){
     return Math.floor(Math.random() * max) + min;
 }
+
+function generateValidPID(){
+    return new Promise(async (resolve, reject) => {
+        let id = utils.genPilotID();
+        if((await db.users.get({pilotID: id})).results.length > 0){
+            resolve(await generateValidPID());
+        }else{
+            resolve(id);
+        }
+    })
+}
+
+function determineRank(hours){
+    return new Promise(async (resolve, reject) => {
+        const rankList = (await db.ranks.get({})).results;
+        
+        rankList.sort((a,b)=>{
+            if(a.minHours > b.minHours){
+                return 1;
+            }else if(a.minHours < b.minHours){
+                return -1;
+            }else{
+                return 0;
+            }
+        });
+
+        let rankID = 0;
+        rankList.forEach(rank =>{
+            if(hours >= rank.minHours && rank.manual == 0){
+                rankID = rank.id;
+            }
+        })
+        resolve(rankID);
+    })    
+}
+
+setTimeout(determineRank, 2500, 12)
