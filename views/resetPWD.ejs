@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password | <%= config.vaInfo.name %>
+    </title>
+    <%- include('components/head')%>
+        <link rel="stylesheet" href="/public/styles/login.css">
+</head>
+
+<body
+    style="background-image: linear-gradient(40deg, rgba(0,0,0,0.99),70%,rgba(0,0,0,0.5)), url('<%= config.customisation.bg%>');">
+    <div class="h-100 position-relative text-light" id="main">
+        <form class="centerV needs-validation p-5 formSignin" action="/api/resetForce" method="POST" novalidate>
+            <img src="<%= config.vaInfo.logo ? config.vaInfo.logo : 'https://va-center.com/public/images/logo.webp'%>"
+                height="100" style="max-width: 30vw;" id="logo"><br><br>
+            <h3 class="fw-bold text-secondary">Hi there!</h3>
+            <h1 class="display-3 fw-bold">Reset your password.</h1>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control bg-dark text-light border-secondary" name="pwd" required
+                    placeholder="00000">
+                <label for="floatingInput"><i class="bi bi-shield-lock"></i> Password</label>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <div class="form-floating">
+                <button type="submit" class="btn btn-dark border-secondary btn-lg">Reset <i
+                        class="bi bi-arrow-right-circle-fill"></i></button>
+            </div>
+        </form>
+    </div>
+    <div class="position-absolute bottom-0 w-100 text-end p-2 text-secondary fw-bold" id="footer">
+        &copy; <%= config.vaInfo.name%> powered by VACenter 4.
+    </div>
+    <%- include('components/scripts')%>
+        <script src="/public/scripts/login.js"></script>
+</body>
+
+</html>

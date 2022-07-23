@@ -69,6 +69,19 @@
 				"default": 0,
 				"transform": null
 			},
+			"manualRank": {
+				"type": "tinyint",
+				"flags": "NOT NULL",
+				"default": 0,
+				"transform": null
+			},
+			"hours": {
+				"type": "int",
+				"flags": "NOT NULL",
+				"default": 0,
+				"transform": null
+			},
+
 			"meta": {
 				"type": "varchar(7000)",
 				"flags": "NOT NULL",
