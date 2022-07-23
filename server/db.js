@@ -396,7 +396,7 @@ function createFunctions() {
        * @param {Object} params Object containing all fields/values to use in "where" criteria to select rows to return
        * @param {string} dbTable The name of the table to select rows in -- this is automatically populated and should not be passed to the function
        */
-      functions[table].get = (params = null, dbTable = table) => {
+      functions[table].get = (params = null, populate = true, dbTable = table) => {
         return new Promise(async (resolve, reject) => {
 
           // Array to hold values which will be dynamically escaped when the query is built
@@ -450,7 +450,7 @@ function createFunctions() {
               for (field in tables[dbTable].fields) {
                  let fieldObj = tables[dbTable].fields[field];
 
-                 if (fieldObj.related && fieldObj.relation == "single") {
+                 if (fieldObj.related && fieldObj.relation == "single" && populate) {
 
                    let related_table = fieldObj.related.table;
                    let related_field = fieldObj.related.field;
@@ -463,10 +463,16 @@ function createFunctions() {
 
                      const [r,f] = await db.promise().query(q).catch(console.error);
 
+/*                     results[result][field] = {
+                       dbdata: target
+                     };*/
+
                      if (r.length > 0) {
                        results[result][field] = r[0];
+//                       results[result][field].relations = r[0];
                      } else {
                        results[result][field] = null;
+//                       results[result][field].relations = null;
                      }
 
                    } catch(e) {
@@ -476,7 +482,7 @@ function createFunctions() {
                    }
                  }
 
-                 if (fieldObj.related && fieldObj.relation == "multiple") {
+                 if (fieldObj.related && fieldObj.relation == "multiple" && populate) {
 
                    let related_table = fieldObj.related.table;
                    let related_field = fieldObj.related.field;
@@ -495,11 +501,19 @@ function createFunctions() {
 
                        const [r,f] = await db.promise().query(q).catch(console.error);
 
+/*                       let newresult = {
+                         dbdata: target
+                       };*/
+
                        if (r.length > 0) {
                          list.push(r[0]);
+//                         newresult.relations = r[0];
                        } else {
                          list.push(null);
+//                         newresult.relations = null;
                        }
+
+//                       list.push(newresult);
 
                      } catch(e) {
 
