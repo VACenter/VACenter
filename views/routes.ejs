@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routes | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <%- include('components/head')%>
+</head>
+
+<body class="p-5">
+    <%- include('components/nav')%>
+        <div class="p-5 w-100">
+            <h1 class="fw-bold"><i class="bi bi-arrow-left-right"></i> Routes</h1>
+            <p class="text-muted fw-bold">Want to file a PIREPs without a pre-filled route? <a class="link link-dark" href="/pirep">Click here</a></p>
+            <div id="wrapper"></div>
+        </div>
+        <%- include('components/scripts')%>
+            <script src="/public/scripts/progress.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+            <script>
+                const grid = new gridjs.Grid({
+                        resizable: true,
+                        columns: ['Number', 'Departure', 'Arrival', 'Aircraft', {
+                            name: 'Actions',
+                            sort: { enabled: false },
+                            formatter: (cell, row) => {
+                                return gridjs.h('a', {
+                                    className: 'btn btn-primary mx-2',
+                                    href: `/newPIREP?id=${row.cells[4].data}`,
+                                }, [gridjs.h("i", {
+                                    className: "d-none bi bi-arrow-right-circle-fill"
+                                }), " Create PIREP"]);
+                            }
+                        }, {
+                                name: "id",
+                                hidden: true
+                            }, {
+                                name: "revoked",
+                                hidden: true
+                            }],
+                        server: {
+                            url: '/api/routes/all',
+                            then: data => data.data.map(route => {
+                                console.log(route);
+                                if(route.minHours <= parseFloat("<%= user.rank.minHours%>") ||  parseInt("<%= user.manualRank%>") == 1){
+                                    let aircraftNames = [];
+                                    route.aircrafts.forEach(craft =>{
+                                        aircraftNames.push(craft.liveryName + " - " + craft.aircraftName);
+                                    })
+                                    return [route.routeNumber, route.departureICAO, route.arrivalICAO, aircraftNames.join(", "), route.id]
+                                }
+                            })
+                        },
+                        search: {
+                            enabled: true
+                        },
+                        language: {
+                            'search': {
+                                'placeholder': '🔍 Search...'
+                            }
+                        },
+                        style: {
+                            table: {
+                                width: '100%'
+                            },
+                            td: {
+                                overflowX: "scroll"
+                            }
+                        },
+                        className: {
+                            td: 'grid-td',
+                        },
+                        sort: true,
+                        pagination: {
+                            enabled: true,
+                            limit: 10,
+                            summary: true
+                        }
+                    }).render(document.getElementById("wrapper"));
+            </script>
+
+</body>
+
+</html>

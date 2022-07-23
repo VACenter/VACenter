@@ -168,7 +168,7 @@ app.get("*", async (req,res, next)=>{
             case "api/routes/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
-                    db.routes.get().then((result, err) => {
+                    db.routes.get(null, true).then((result, err) => {
                         console.log(result);
                         if (err) {
                             console.error(err);
@@ -673,6 +673,63 @@ app.post("*", async (req, res, next)=>{
                                         value: target.pilotID
                                     }
                                 });
+                                res.status(200);
+                                res.redirect(`/admin/pilot/view?id=${target.pilotID}`)
+                            } else {
+                                res.status(404);
+                                res.send("Unknown target");
+                            }
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit users.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
+            case "api/pilots/rank": {
+                if (req.body.pilot) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("SUPER_USER") || userPerms.has("MANAGE_PILOT")) {
+                            if ((await db.users.get({ pilotID: req.body.pilot })).results.length > 0) {
+                                const target = (await db.users.get({ pilotID: req.body.pilot })).results[0];
+                                if(req.body.manualRank){
+                                    if(req.body.rank){
+                                        db.users.update({
+                                            fields: {
+                                                manualRank: 1,
+                                                rank: req.body.rank
+                                            },
+                                            where: {
+                                                field: "pilotID",
+                                                operator: "=",
+                                                value: target.pilotID
+                                            }
+                                        });
+
+                                    }else{
+                                        res.sendStatus(400);
+                                    }
+                                }else{
+                                    db.users.update({
+                                    fields: {
+                                        manualRank: 0
+                                    },
+                                    where: {
+                                        field: "pilotID",
+                                        operator: "=",
+                                        value: target.pilotID
+                                    }
+                                });
+                                
+                                }
                                 res.status(200);
                                 res.redirect(`/admin/pilot/view?id=${target.pilotID}`)
                             } else {
@@ -1359,6 +1416,33 @@ app.get("*", async (req,res)=>{
                         res.render("dashboard", {
                             user: parsedUser,
                             contentInteger: random(1, 3)
+                        })
+                    }
+                    break;
+                case "/routes":
+                    if(user == null){
+                        res.redirect("/login");
+                    }else{
+                        res.render("routes", {
+                            user: user
+                        })
+                    }
+                    break;
+                case "/newPIREP":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        let route = null;
+                        if(req.query.id){
+                            let routeID = req.query.id.toString();
+                            route = await db.routes.get({id: routeID});
+                            if(route.results.length > 0){
+                                route = route.results[0];
+                            }
+                        }
+                        res.render("nPirep", {
+                            user: user,
+                            route
                         })
                     }
                     break;

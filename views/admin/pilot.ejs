@@ -45,6 +45,31 @@
                     </li>
                 </ul>
                 <br>
+                <h2><i class="bi bi-person-badge"></i> Rank</h2>
+                <hr>
+                <form action="/api/pilots/rank" method="POST">
+                    <input class="d-none" type="text" value="<%= target.pilotID%>" name="pilot">
+                    <div class="col mb-4">
+                        <div class="form-check text-start">
+                            <input class="form-check-input" type="checkbox" value="true" id="manualRank" <% if(target.manualRank == 1){%>checked<%}%> name="manualRank">
+                            <label class="form-check-label" for="manualRank">
+                                This user is manually ranked
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col mb-4 d-none" id="manRank">
+                        <label for="rank" class="form-label">Pilot Rank</label>
+                        <select class="form-select" id="rankSelect" name="rank" required>
+                            <% ranks.forEach(rank=>{%>
+                                <option value="<%= rank.id%>" <% if(rank.id == user.rank.id){%>selected <%}%>>
+                                    <%= rank.label%>
+                                </option>
+                                <%})%>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-arrow-right-circle-fill"></i> Change Rank</button>
+                </form>
+                <br>
                 <h2><i class="bi bi-person"></i> Personalisation</h2>
                 <hr>
                 <form action="/api/pilots/callsign" method="POST">
@@ -136,6 +161,28 @@
                                 }, false)
                             })
                     })();
+
+                    const checkbox = document.getElementById('manualRank')
+
+                        checkbox.addEventListener('change', (event) => {
+                            if (event.currentTarget.checked) {
+                                document.getElementById("manRank").classList.remove("d-none");
+                                document.getElementById("rankSelect").removeAttribute("disabled");
+                            } else {
+                                document.getElementById("manRank").classList.add("d-none");
+                                document.getElementById("rankSelect").setAttribute("disabled", "true");
+
+                            }
+                        })
+                    if (checkbox.checked) {
+                            document.getElementById("manRank").classList.remove("d-none");
+                            document.getElementById("rankSelect").removeAttribute("disabled");
+                        } else {
+                            document.getElementById("manRank").classList.add("d-none");
+                            document.getElementById("rankSelect").setAttribute("disabled", "true");
+
+                        }
+
     </script>
 </body>
 
