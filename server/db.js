@@ -338,7 +338,7 @@ function createFunctions() {
           let values = [];
 
           // Only build and send query if we have a "where" filter -- do not risk deleting everything by accident
-          if (params) {
+          if (params && Object.keys(params).length > 0) {
 
             // Create variable for the SQL query
             let sql = `DELETE FROM ${dbTable} `;
@@ -406,7 +406,7 @@ function createFunctions() {
           let sql = `SELECT * FROM ${dbTable} `;
 
           // Add a WHERE clause if we have a "where" filter
-          if (params) {
+          if (params && Object.keys(params).length > 0) {
 
             // Create WHERE clause
             sql += `WHERE `;
@@ -436,10 +436,14 @@ function createFunctions() {
             values: values
           }
 
+          console.log(q);
+
           try {
 
             // Send the query to the DB
             const [results,fields] = await db.promise().query(q).catch(console.error);
+
+            console.log(results);
 
             for (result in results) {
             // Include relation tables if any related
