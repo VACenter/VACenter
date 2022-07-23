@@ -122,7 +122,7 @@
 				"flags": "NOT NULL",
 				"default": "'[]'",
 				"transform": null,
-                                "related": { "table": "aircraft", "field": "aircraftID" },
+                                "related": { "table": "aircraft", "field": "liveryID" },
                                 "relation": "multiple"
 			},
 			"flightTime": {

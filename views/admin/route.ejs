@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adminstration | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <%- include('../components/head')%>
+</head>
+
+<body class="p-2 p-md-5 pt-4">
+    <%- include('../components/nav')%>
+        
+
+            <div class="mt-5 text-start">
+                <div class="px-4 py-5 mt-5 text-center">
+                    <i class="d-block mx-auto mb-4 bi bi-arrow-left-right display-2"></i>
+                    <h1 class="display-5 fw-bold"><%= route.routeNumber%></h1>
+                    <div class="col-lg-6 mx-auto">
+                    </div>
+                </div>
+                <form method="POST" action="/api/routes/update" class="needs-validation" novalidate>
+                    <input type="hidden" name="routeID" value="<%= route.id%>">
+                    <h2><i class="bi bi-123"></i> Route Number</h2>
+                    <hr>
+                    <input class="form-control" name="routeNum" type="text" placeholder="<%= config.vaInfo.code%>000" value="<%= route.routeNumber%>">
+                    <br>
+                    <h2><i class="bi bi-pin-map"></i> Departure ICAO</h2>
+                    <hr>
+                    <input class="form-control" name="departureICAO" minlength="4" maxlength="4" type="text" placeholder="YMML" value="<%= route.departureICAO %>">
+                    <br>
+                    <h2><i class="bi bi-pin-map"></i> Arrival ICAO</h2>
+                    <hr>
+                    <input class="form-control" name="arrivalICAO" minlength="4" maxlength="4" type="text" placeholder="YSSY" value="<%= route.arrivalICAO %>">
+                    <br>
+                    <h2><i class="bi bi-person-badge"></i> Rank Required</h2>
+                    <hr>
+                    <select class="form-select" id="rankSelect" name="minRank" required>
+                        <% ranks.forEach(rank=>{%>
+                            <option value="<%= rank.minHours%>" <% if(rank.minHours == route.minHours){%>selected<%}%>>
+                                <%= rank.label%>
+                            </option>
+                            <%})%>
+                    </select>
+                    <br>
+                    <h2><i class="bi bi-airplane"></i> Aircraft</h2>
+                    <hr>
+                    <select class="form-select" multiple id="aircraft" name="aircraft" required>
+                        <% aircraft.forEach(aircraft=>{%>
+                            <option value="<%= aircraft.liveryID%>" <% if(route.aircrafts.includes(aircraft.liveryID) == true){%>selected<%}%>>
+                                <%= aircraft.liveryName + " - " + aircraft.aircraftName%>
+                            </option>
+                            <%})%>
+                    </select>
+                    <br>
+                    <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-circle-fill"></i> Submit Changes</button>
+                    <button class="btn btn-secondary btn-lg" type="button" onclick="history.back();"><i class="bi bi-arrow-left-circle-fill"></i> Back</button>
+                </form>
+            </div>
+
+            <%- include('../components/scripts')%>
+                <script src="/public/scripts/progress.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+                <script>
+                    (function () {
+                        'use strict'
+
+                        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                        var forms = document.querySelectorAll('.needs-validation')
+
+                        // Loop over them and prevent submission
+                        Array.prototype.slice.call(forms)
+                            .forEach(function (form) {
+                                form.addEventListener('submit', function (event) {
+                                    if (!form.checkValidity()) {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                    }
+
+                                    form.classList.add('was-validated')
+                                }, false)
+                            })
+                    })();
+    </script>
+</body>
+
+</html>

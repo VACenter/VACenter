@@ -165,6 +165,28 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
             } break;
+            case "api/routes/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.routes.get().then((result, err) => {
+                        console.log(result);
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            }
+                break;
             case "api/aircraft/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
@@ -226,6 +248,8 @@ app.get("*", async (req,res, next)=>{
             case "api/pilots/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
+                    const userPerms = new perms.Perm(pilot.permissions);
+                    if (userPerms.has("MANAGE_PILOT") || userPerms.has("SUPER_USER")) {
                     db.users.get({}).then((result, err) => {
                         if (err) {
                             console.error(err);
@@ -233,11 +257,18 @@ app.get("*", async (req,res, next)=>{
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
                         } else {
+                                result.results.forEach(pilot => {
+                                    delete pilot['password'];
+                                })
                             res.json({
                                 data: result.results
                             })
                         }
                     });
+                    }else{
+                        res.status(403);
+                        res.send("Not allowed");
+                    }
                 } else {
                     res.status(401);
                     res.send("Not signed in.")
@@ -841,6 +872,96 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             } break;
+            case "api/routes/new": {
+                if (req.body.routeNum && req.body.depICAO && req.body.arrICAO && req.body.aircraft && req.body.minRank) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            let aircraft = [];
+                            if(Array.isArray(req.body.aircraft)){
+                                aircraft = req.body.aircraft;
+                            }else{
+                                aircraft.push(req.body.aircraft);
+                            }
+                                db.routes.create({
+                                    routeNumber: req.body.routeNum.toString(),
+                                    departureICAO: req.body.depICAO.split(0,4),
+                                    arrivalICAO: req.body.arrICAO.split(0,4),
+                                    aircrafts: JSON.stringify(aircraft),
+                                    minHours: req.body.minRank
+                                }).then((result, err) => {
+                                    if (err) {
+                                        console.error(err);
+                                        res.statusMessage = "Error from VACenter, check server console.";
+                                        res.sendStatus(500);
+                                        res.send("Error from VACenter, check server console.");
+                                    } else {
+                                        res.redirect("/admin/routes");
+                                    }
+                                });
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit routes.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
+            case "api/routes/update": {
+                if (req.body.routeID && req.body.routeNum && req.body.departureICAO && req.body.arrivalICAO && req.body.aircraft && req.body.minRank) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            let aircraft = [];
+                            if (Array.isArray(req.body.aircraft)) {
+                                aircraft = req.body.aircraft;
+                            } else {
+                                aircraft.push(req.body.aircraft);
+                            }
+                            db.routes.update({
+                                fields: {
+                                    routeNumber: req.body.routeNum.toString(),
+                                    departureICAO: req.body.departureICAO.split(0, 4),
+                                    arrivalICAO: req.body.arrivalICAO.split(0, 4),
+                                    aircrafts: JSON.stringify(aircraft),
+                                    minHours: req.body.minRank
+                                },
+                                where: {
+                                    field: "id",
+                                    operator: "=",
+                                    value: req.body.routeID
+                                }
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.redirect(`/admin/routes/view?id=${req.body.routeID}`);
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit routes.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
+
             case "api/webhooks/new": {
                 if (req.body.webhookName && req.body.hookURL && req.body.hookEvents) {
                     const pilot = await authenticate(req);
@@ -1015,6 +1136,37 @@ app.delete("*", async (req, res, next) => {
                 } else {
                     res.status(400);
                     res.send("Missing Codeshare ID");
+                }
+            } break;
+            case "api/routes/delete": {
+                if (req.body.routeID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            db.routes.delete({
+                                id: parseInt(req.body.routeID)
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.sendStatus(200);
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not allowed to modify routes.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Missing Route ID");
                 }
             } break;
             case "api/aircraft/delete": {
@@ -1284,6 +1436,58 @@ app.get("*", async (req,res)=>{
                                 user: parsedUser,
                                 userPerms: userPerms
                             })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/routes":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            res.render("admin/routes", {
+                                user: parsedUser,
+                                userPerms: userPerms,
+                                ranks: (await db.ranks.get({})).results,
+                                aircraft: (await db.aircraft.get({})).results
+                            })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/routes/view":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            if (req.query.id) {
+                                if ((await db.routes.get({ id: req.query.id })).results.length > 0) {
+                                    const targetRoute = (await db.routes.get({ id: req.query.id }, false)).results[0];
+                                    res.render("admin/route", {
+                                        user: parsedUser,
+                                        userPerms: userPerms,
+                                        route: targetRoute,
+                                        ranks: (await db.ranks.get({})).results,
+                                        aircraft: (await db.aircraft.get({})).results
+                                    })
+                                } else {
+                                    res.sendStatus(404);
+                                }
+                            } else {
+                                res.sendStatus(400);
+                            }
                         } else {
                             if (user.permissions != 0) {
                                 res.redirect("/admin")

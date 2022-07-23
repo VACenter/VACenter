@@ -192,8 +192,7 @@
                             formatter: (cell, row) => {
                                 return [gridjs.h('a', {
                                     className: "btn btn-primary mx-2",
-                                    href: `/admin/pilot/view?id=${row.cells[4].data}`,
-                                    onClick: () => viewUser(row.cells[4].data)
+                                    href: `/admin/pilot/view?id=${row.cells[4].data}`
                                 }, 'View User'), gridjs.h('button', {
                                     className: 'btn btn-danger mx-2',
                                     onClick: () => revokeUser(row.cells[4].data, row.cells[5].data)
