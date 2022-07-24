@@ -187,6 +187,49 @@ app.get("*", async (req,res, next)=>{
                 }
             }
                 break;
+            case "api/multi/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.multipliers.get().then((result, err) => {
+                        console.log(result);
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            }
+                break;
+            case "api/pireps/me": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    db.pireps.get({pilot: pilot.pilotID}).then((result, err) => {
+                        console.log(result);
+                        if (err) {
+                            console.error(err);
+                            res.statusMessage = "Error from VACenter, check server console.";
+                            res.sendStatus(500);
+                            res.send("Error from VACenter, check server console.");
+                        } else {
+                            res.json({
+                                data: result.results
+                            })
+                        }
+                    });
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            }break;
             case "api/aircraft/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
@@ -846,6 +889,45 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             }break;
+            case "api/pireps/new": {
+                if (req.body.flightNum && req.body.depICAO && req.body.arrICAO && req.body.aircraft && req.body.operator && req.body.fuel && req.body.ftHours && req.body.ftMins && req.body.comments && req.body.date) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                            db.pireps.create({
+                                depAir: req.body.depICAO.slice(0,4),
+                                arrAir: req.body.arrICAO.slice(0,4),
+                                pilot: pilot.pilotID,
+                                vehicle: req.body.aircraft,
+                                operator: req.body.operator,
+                                flightNumber: req.body.flightNum,
+                                flightTime: (parseInt(req.body.ftHours) * 60) + parseInt(req.body.ftMins),
+                                state: 0,
+                                comments: req.body.comments,
+                                multi: req.body.multi ? ((await db.multipliers.get({label: req.body.multi})).results[0]).id : null,
+                                fuel: req.body.fuel,
+                                reportDate: (new Date()).getTime(),
+                                flightDate: (new Date(req.body.date)).getTime(),
+                                image: null
+                            
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.redirect("/pirepArchive");
+                                }
+                            });
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
             case "api/codeshare/new": {
                 if (req.body.operatorName && req.body.operatorCode) {
                     const pilot = await authenticate(req);
@@ -868,6 +950,46 @@ app.post("*", async (req, res, next)=>{
                         } else {
                             res.status(403);
                             res.send("Not authorised to edit codeshare.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Need all fields.")
+                }
+            } break;
+            case "api/multi/new": {
+                if (req.body.multiLabel && req.body.multiAmount) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            try{
+                                db.multipliers.create({
+                                    label: req.body.multiLabel,
+                                    amount: req.body.multiAmount
+                                }).then((result, err) => {
+                                    if (err) {
+                                        console.error(err);
+                                        res.statusMessage = "Error from VACenter, check server console.";
+                                        res.sendStatus(500);
+                                        res.send("Error from VACenter, check server console.");
+                                    } else {
+                                        res.redirect("/admin/routes");
+                                    }
+                                });
+                            }catch(err){
+                                console.error(err);
+                                res.statusMessage = "Error from VACenter, check server console.";
+                                res.sendStatus(500);
+                                res.send("Error from VACenter, check server console.");
+                            }
+                            
+                        } else {
+                            res.status(403);
+                            res.send("Not authorised to edit multipliers.")
                         }
                     } else {
                         res.status(401);
@@ -1018,7 +1140,6 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             } break;
-
             case "api/webhooks/new": {
                 if (req.body.webhookName && req.body.hookURL && req.body.hookEvents) {
                     const pilot = await authenticate(req);
@@ -1354,6 +1475,37 @@ app.delete("*", async (req, res, next) => {
                     res.send("Need all fields.")
                 }
             } break;
+            case "api/multi/delete": {
+                if (req.body.multiID) {
+                    const pilot = await authenticate(req);
+                    if (pilot) {
+                        const userPerms = new perms.Perm(pilot.permissions);
+                        if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
+                            db.multipliers.delete({
+                                id: parseInt(req.body.multiID)
+                            }).then((result, err) => {
+                                if (err) {
+                                    console.error(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    res.sendStatus(200);
+                                }
+                            });
+                        } else {
+                            res.status(403);
+                            res.send("Not allowed to modify multipliers.")
+                        }
+                    } else {
+                        res.status(401);
+                        res.send("Not signed in.")
+                    }
+                } else {
+                    res.status(400);
+                    res.send("Missing Multi ID");
+                }
+            } break;
             default:
                 res.status(404);
                 res.send("API path not found.");
@@ -1428,6 +1580,16 @@ app.get("*", async (req,res)=>{
                         })
                     }
                     break;
+                case "/pirepArchive":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+
+                        res.render("archive", {
+                            user: user
+                        })
+                    }
+                    break;
                 case "/newPIREP":
                     if (user == null) {
                         res.redirect("/login");
@@ -1442,7 +1604,10 @@ app.get("*", async (req,res)=>{
                         }
                         res.render("nPirep", {
                             user: user,
-                            route
+                            route,
+                            aircraft: (await db.aircraft.get()).results,
+                            multipliers: (await db.multipliers.get()).results,
+                            operators: (await db.operators.get()).results
                         })
                     }
                     break;

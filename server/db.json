@@ -238,7 +238,7 @@
 			},
 			"label": {
 				"type": "varchar(1024)",
-				"flags": "NOT NULL",
+				"flags": "NOT NULL UNIQUE",
 				"default": "''",
 				"transform": null
 			},
@@ -304,24 +304,39 @@
 				"type": "varchar(5)",
 				"flags": "NOT NULL",
 				"default": "''",
-				"transform": null
+				"transform": null,
+				"related": {
+					"table": "users",
+					"field": "pilotID"
+				},
+				"relation": "single"
 			},
 			"vehicle": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
 				"default": "''",
-				"transform": null
+				"transform": null,
+				"related": {
+					"table": "aircraft",
+					"field": "liveryID"
+				},
+				"relation": "single"
 			},
 			"operator": {
+				"type": "bigint",
+				"flags": "unsigned NOT NULL",
+				"default": 0,
+				"transform": null,
+				"related": {
+					"table": "operators",
+					"field": "id"
+				},
+				"relation": "single"
+			},
+			"flightNumber": {
 				"type": "varchar(1024)",
 				"flags": "NOT NULL",
 				"default": "''",
-				"transform": null
-			},
-			"flightNumber": {
-				"type": "int",
-				"flags": "NOT NULL",
-				"default": 0,
 				"transform": null
 			},
 			"flightTime": {
@@ -346,7 +361,12 @@
 				"type": "int",
 				"flags": "",
 				"default": 0,
-				"transform": null
+				"transform": null,
+				"related": {
+					"table": "multipliers",
+					"field": "id"
+				},
+				"relation": "single"
 			},
 			"fuel": {
 				"type": "int",

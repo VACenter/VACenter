@@ -14,9 +14,165 @@
 
 <body class="p-5">
     <%- include('components/nav')%>
-        <div class="p-5 w-100">
+        <form class="p-5 w-100" action="/api/pireps/new" method="post">
             <h1 class="fw-bold"><i class="bi bi-file-post"></i> New PIREP</h1>
-        </div>
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <label for="flightNum" class="form-label">Flight Number</label>
+                    <input type="text" class="form-control" id="flightNum" name="flightNum" required <% if(route){%>value="<%= route.routeNumber%>"<%}%>>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid flight number.
+                    </div>
+                </div>
+                <div class="col-6 mb-4">
+                    <label for="depICAO" class="form-label">Departure ICAO</label>
+                    <input type="text" class="form-control" id="depICAO" name="depICAO" required <% if(route){%>value="<%= route.departureICAO%>"<%}%>>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid ICAO.
+                    </div>
+                </div>
+                <div class="col-6 mb-4">
+                    <label for="arrICAO" class="form-label">Arrival ICAO</label>
+                    <input type="text" class="form-control" id="arrICAO" name="arrICAO" required <% if(route){%>value="<%= route.arrivalICAO%>"<%}%>>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid ICAO.
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <label for="aircraft" class="form-label">Aircraft</label>
+                    <select class="form-select" id="aircraft" name="aircraft" required>
+                        <% if(route){%>
+                            <% route.aircrafts.forEach(aircraft=>{%>
+                                <option value="<%= aircraft.liveryID%>">
+                                    <%= aircraft.liveryName + " - " + aircraft.aircraftName%>
+                                </option>
+                            <%})%>
+                        <%}else{%>
+                            <% aircraft.forEach(aircraft=>{%>
+                                <option value="<%= aircraft.liveryID%>">
+                                    <%= aircraft.liveryName + " - " + aircraft.aircraftName%>
+                                </option>
+                            <%})%>
+                        <%}%>
+                    </select>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid rank.
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <label for="arrICAO" class="form-label">Operator</label>
+                    <select class="form-select" required name="operator">
+                        <% operators.forEach(op=>{%>
+                            <option value="<%= op.id%>">(<%= op.code%>) <%= op.name%></option>
+                        <%})%>
+                    </select>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid operator.
+                    </div>
+                </div>
+                <div class="col-6 mb-4">
+                    <label for="multi" class="form-label">Multiplier</label>
+                    <input type="text" class="form-control" id="multi" name="multi" list="multiList" placeholder="Type to search...">
+                    <datalist id="multiList">
+                        <% multipliers.forEach(multi=>{%>
+                            <option value="<%= multi.label %>">
+                                <%= multi.amount%>x
+                            </option>
+                            <%})%>
+                    </datalist>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid multi.
+                    </div>
+                </div>
+                <div class="col-6 mb-4">
+                    <label for="fuel" class="form-label">Fuel Used</label>
+                    <div class="input-group mb-3">
+                        <input type="number" class="form-control" id="fuel" name="fuel" placeholder="Fuel Used" aria-label="Fuel Used"
+                            aria-describedby="fuelUnit">
+                        <span class="input-group-text" id="fuelUnit">kg</span>
+                    </div>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid weight.
+                    </div>
+                </div>
+                <div class="col-6 mb-4">
+                    <label for="ftHours" class="form-label">Flight Time</label>
+                    <input type="number" min="0" class="form-control" id="ftHours" required name="ftHours" placeholder="Hours">
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid time, in hours.
+                    </div>
+                </div>
+                <div class="col-6 mb-4">
+                    <label for="ftMins" class="form-label">⠀</label>
+                    <input type="number" max="60" min="0" class="form-control" id="ftMins" required name="ftMins" placeholder="Minutes">
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid time, in minutes.
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <label for="comments" class="form-label">Comments</label><br>
+                    <textarea  class="form-control" id="comments" required name="comments" placeholder="Write about your flight"></textarea>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid comments.
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <label for="date" class="form-label">Flight Date</label>
+                    <input class="form-control" id="date" type="date" required name="date"
+                        placeholder="Write about your flight">
+                        <p style="font-size: 14px" class="text-muted">As of departure</p>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                    <div class="invalid-feedback">
+                        Need a valid date.
+                    </div>
+                </div>
+                <% if(config.instance.images){%>
+                    <div class="col-12 mb-4">
+                        <label for="date" class="form-label">Image</label>
+                        <input class="form-control" id="date" type="date" required name="date" placeholder="Write about your flight">
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                        <div class="invalid-feedback">
+                            Need a valid image.
+                        </div>
+                    </div>
+                <%}%>
+                <button class="btn btn-primary"><i class="bi bi-arrow-right-circle-fill"></i> Submit</button>
+            </div>
+        </form>
         <%- include('components/scripts')%>
             <script src="/public/scripts/progress.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>

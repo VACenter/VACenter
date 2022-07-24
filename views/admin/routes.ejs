@@ -108,7 +108,54 @@
                 </div>
                 <div id="wrapper"></div>
             </div>
-
+            <div class="mt-5">
+                <h1 class="fw-bold">Multipliers <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newMulti"><i
+                            class="bi bi-plus-circle-fill"></i> Add Multiplier</button></h1>
+                <div class="modal fade text-dark" id="newMulti" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="/api/multi/new" method="POST" class="needs-validation" novalidate>
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Create New Multiplier</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <h2 class="fw-bold">New Multiplier</h2>
+                                    <div class="row row-cols-1">
+                                        <div class="col mb-4">
+                                            <label for="multiLabel" class="form-label">Label</label>
+                                            <input type="text" placeholder="Event101" class="form-control"
+                                                id="multiLabel" name="multiLabel" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Need a valid label.
+                                            </div>
+                                        </div>
+                                        <div class="col mb-4">
+                                            <label for="multiAmount" class="form-label">Amount</label>
+                                            <input type="number" min="1" class="form-control"  step=".01" value="1"
+                                                id="multiAmount" name="multiAmount" required>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Need a valid amount, it must be over 1.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Create</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="multiWrapper"></div>
+            </div>
 
             <%- include('../components/scripts')%>
                 <script src="/public/scripts/progress.min.js"></script>
@@ -188,6 +235,55 @@
                             }
                         }).render(document.getElementById("wrapper"));
 
+
+                    const multiGrid = new gridjs.Grid({
+                            columns: ['Label', 'Amount', {
+                                name: 'Actions',
+                                sort: { enabled: false },
+                                formatter: (cell, row) => {
+                                    return gridjs.h('button', {
+                                        className: 'btn btn-danger mx-2',
+                                        onClick: () => deleteMulti(row.cells[2].data)
+                                    }, `Remove`);
+                                }
+                            }, {
+                                    name: "id",
+                                    hidden: true
+                                }],
+                            server: {
+                                url: '/api/multi/all',
+                                then: data => data.data.map(multi => {
+                                    return [multi.label, multi.amount, multi.id]
+                                })
+                            },
+                            search: {
+                                enabled: true
+                            },
+                            language: {
+                                'search': {
+                                    'placeholder': '🔍 Search...'
+                                }
+                            },
+                            style: {
+                                table: {
+                                    width: '100%'
+                                },
+                                td: {
+                                    overflowX: "scroll"
+                                }
+                            },
+                            className: {
+                                td: 'grid-td',
+                            },
+                            sort: true,
+                            pagination: {
+                                enabled: true,
+                                limit: 10,
+                                summary: true
+                            }
+                        }).render(document.getElementById("multiWrapper"));
+
+
                     function deleteRoute(routeID) {
                         const data = `routeID=${routeID}`;
 
@@ -206,6 +302,30 @@
                         });
 
                         xhr.open("DELETE", "/api/routes/delete");
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.send(data);
+                    }
+
+                    function deleteMulti(multiID) {
+                        console.log(multiID);
+                        const data = `multiID=${multiID}`;
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.withCredentials = true;
+
+                        xhr.addEventListener("readystatechange", function () {
+                            if (this.readyState === this.DONE) {
+                                if (this.status == 200) {
+                                    window.location.reload();
+                                } else {
+                                    alert("An error occured, see console");
+                                    console.error([this.status, this.statusText, this.responseText]);
+                                }
+                            }
+                        });
+
+                        xhr.open("DELETE", "/api/multi/delete");
                         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
                         xhr.send(data);

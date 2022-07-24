@@ -41,10 +41,10 @@
                         <a class="nav-link <% if(path == 'acars'){ %>active" aria-current="page<%}%>" href="/acars"><i class="bi bi-robot"></i> ACARS</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <% if(path == 'routes'){ %>active" aria-current="page<%}%>" href="/routes"><i class="bi bi-arrow-left-right"></i> Routes</a>
+                        <a class="nav-link <% if(path == 'routes' || path == "newPIREP"){ %>active" aria-current="page<%}%>" href="/routes"><i class="bi bi-arrow-left-right"></i> Routes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <% if(path == 'pireps'){ %>active" aria-current="page<%}%>" href="/pireps"><i class="bi bi-archive"></i> PIREP Archive</a>
+                        <a class="nav-link <% if(path == 'pirepArchive'){ %>active" aria-current="page<%}%>" href="/pirepArchive"><i class="bi bi-archive"></i> PIREP Archive</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <% if(path == 'events'){ %>active" aria-current="page<%}%>" href="/events"><i class="bi bi-calendar-date"></i> Events</a>
