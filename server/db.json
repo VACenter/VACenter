@@ -358,9 +358,9 @@
 				"transform": null
 			},
 			"multi": {
-				"type": "int",
-				"flags": "",
-				"default": 0,
+				"type": "bigint",
+				"flags": "unsigned",
+				"default": null,
 				"transform": null,
 				"related": {
 					"table": "multipliers",

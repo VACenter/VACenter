@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View PIREP | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <%- include('./components/head')%>
+</head>
+
+<body class="p-2 p-md-5 pt-4">
+    <%- include('./components/nav')%>
+
+
+        <div class="mt-5 text-start">
+            <div class="px-4 py-5 mt-5 text-center">
+                <i class="d-block mx-auto mb-4 bi bi-file-post display-2"></i>
+                <h1 class="display-5 fw-bold">
+                    <%= pirep.flightNumber%>
+                </h1>
+                <div class="col-lg-6 mx-auto">
+                </div>
+            </div>
+            <div>
+                <h3><i class="bi bi-123"></i> Route Information</h3>
+                <hr>
+                <p class="fs-5"><span class="fw-bold"><i class="bi bi-123"></i> Flight Number: </span> <%= pirep.flightNumber%><br><span class="fw-bold"><i class="bi bi-pin-map"></i> Departure: </span><%= pirep.depAir%><br><span class="fw-bold"><i class="bi bi-pin-map"></i> Arrival: </span><%= pirep.arrAir%><br><span class="fw-bold"><i class="bi bi-calendar-date"></i> Flight Date: </span><%= new Date(pirep.flightDate).toDateString()%><br><span class="fw-bold"><i class="bi bi-building"></i> Operator: </span>
+                <%= pirep.operator.name%> (<%= pirep.operator.code%>)</p>
+                <br>
+                <h3><i class="bi bi-file-post"></i> PIREP Information</h3>
+                <hr>
+                <p class="fs-5">
+                    <span class="fw-bold"><i class="bi bi-<%= pirep.state == 0 ? 'dash-circle-dotted' : (pirep.state == 1 ? 'check-circle-fill' : (pirep.state == 2 ? 'x-circle-fill' : 'exclamation-circle-fill') ) %>"></i> Status: </span><span class="badge bg-<%= pirep.state == 0 ? 'secondary' : (pirep.state == 1 ? 'success' : (pirep.state == 2 ? 'danger' : 'warning'))%>"><%= pirep.state == 0 ? "Awaiting Review" : (pirep.state == 1 ? "Approved" : (pirep.state == 2 ? "Rejected" : "Unknown"))%></span></span>
+                    <br>
+                    <span class="fw-bold"><i class="bi bi-clock-history"></i> Multiplier: </span> <%= pirep.multiplier ? pirep.multiplier.label + `(${pirep.multiplier.amount})` : "None"%>
+                    <br>
+                    <span class="fw-bold"><i class="bi bi-calendar-date"></i> Report Date: </span> <%= new Date(pirep.reportDate).toDateString()%>
+                    <br>
+                    <span class="fw-bold"><i class="bi bi-chat-left-text"></i> Comments: </span><br>
+                    <div class="form-control p-3">
+                        <%= pirep.comments%><br><span class="text-muted fs-6">- <%= user.name%></span>
+                    </div>
+                    <br>
+                </p>
+                <br>
+                <h3><i class="bi bi-file-post"></i> Flight Information</h3>
+                <hr>
+                <p class="fs-5">
+                    <span class="fw-bold"><i class="bi bi-airplane"></i> Aircraft: </span><%= pirep.vehicle.liveryName%> - <%= pirep.vehicle.aircraftName%>
+                    <br>
+                    <span class="fw-bold"><i class="bi bi-clock"></i> Flight Time: </span><span class="processTimeMe"><%= pirep.flightTime%></span>
+                    <br><span class="fs-6 text-muted">Multiplier Not Included</span>
+                    <br>
+                    <span class="fw-bold"><i class="bi bi-fuel-pump"></i> Fuel: </span><%= pirep.fuel%>kg
+                    <br>
+                </p>
+                <br>
+                <% if(isManager){%>
+                    <h3><i class="bi bi-check-circle"></i> Manage</h3>
+                    <hr>
+                    <form class="form-select p-3" action="/api/pireps/update" method="POST">
+                        <input type="hidden" name="pirep" value="<%= pirep.id%>">
+                        <label class="form-label">Update Status</label>
+                        <select class="form-select" name="state">
+                            <option value="0" <%if(pirep.state == 0){%>selected<%}%>>Awaiting Review</option>
+                            <option value="1" <%if(pirep.state == 1){%>selected<%}%>>Approved</option>
+                            <option value="2" <%if(pirep.state == 2){%>selected<%}%>>Rejected</option>
+                        </select>
+                        <br>
+                        <button class="btn btn-primary">Update Status</button>
+                    </form>
+                    <br>
+                <%}%>
+                <button class="btn btn-secondary btn-lg" type="button" onclick="history.back();"><i
+                        class="bi bi-arrow-left-circle-fill"></i> Back</button>
+            </div>
+        </div>
+
+        
+            <script src="/public/scripts/progress.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+            <script>
+                function toHoursAndMinutes(totalMinutes) {
+                        const minutes = totalMinutes % 60;
+                        const hours = Math.floor(totalMinutes / 60);
+
+                        return `${padTo2Digits(hours)}hrs ${padTo2Digits(minutes)}min`;
+                    }
+
+                    function padTo2Digits(num) {
+                        return num.toString().padStart(2, '0');
+                    }
+
+                Array.from(document.getElementsByClassName('processTimeMe')).forEach((element =>{
+                    element.innerHTML = toHoursAndMinutes(parseFloat(element.innerHTML))
+                }))
+                (function () {
+                    'use strict'
+
+                    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                    var forms = document.querySelectorAll('.needs-validation')
+
+                    // Loop over them and prevent submission
+                    Array.prototype.slice.call(forms)
+                        .forEach(function (form) {
+                            form.addEventListener('submit', function (event) {
+                                if (!form.checkValidity()) {
+                                    event.preventDefault()
+                                    event.stopPropagation()
+                                }
+
+                                form.classList.add('was-validated')
+                            }, false)
+                        })
+                })();
+            </script>
+            <%- include('./components/scripts')%>
+</body>
+
+</html>

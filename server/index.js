@@ -10,6 +10,7 @@ process.on('uncaughtException', (err) => {
     //@ts-ignore
     console.file("vacenter.log");
     console.error(err);
+    Sentry.captureException(err);
 
 });
 
@@ -32,6 +33,8 @@ const fetch = require('node-fetch');
 const morgan = require("morgan");
 const cors = require("cors");
 const utils = require("./utils.js");
+const Sentry = require('@sentry/node');
+const Tracing = require("@sentry/tracing");
 
 //Config
 const launchConfig = config.get();
@@ -74,8 +77,35 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+//sentry
+Sentry.init({
+    dsn: "https://4759520c48d94cc9bebaa2cd772a0721@o1309901.ingest.sentry.io/6556554",
+    integrations: [
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }),
+        // enable Express.js middleware tracing
+        new Tracing.Integrations.Express({ app }),
+    ],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+});
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
+
+// RequestHandler creates a separate execution context using domains, so that every
+// transaction/span/breadcrumb is attached to its own Hub instance
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
+app.use(Sentry.Handlers.errorHandler());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cors());
+app.use("/public", express.static(path.join(__dirname, '../', "public")));
 
 io.use(async (socket, next) => {
     console.log(socket.handshake.auth)
@@ -102,10 +132,6 @@ io.use(async (socket, next) => {
         next(new Error("Failed Authentication"));
     }
 });
-app.use(express.urlencoded({extended: true}));
-app.use(express.json());
-app.use(cors());
-app.use("/public", express.static(path.join(__dirname, '../', "public")));
 app.use(function (req, res, next) {
     const reqConfig = Object.create(config.get());
     delete reqConfig['database'];
@@ -131,6 +157,7 @@ app.get("*", async (req,res, next)=>{
                     db.ranks.get({}).then((result,err)=>{
                         if (err) {
                             console.error(err);
+                            Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -151,6 +178,7 @@ app.get("*", async (req,res, next)=>{
                     db.operators.get({}).then((result, err) => {
                         if (err) {
                             console.error(err);
+                            Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -172,6 +200,7 @@ app.get("*", async (req,res, next)=>{
                         console.log(result);
                         if (err) {
                             console.error(err);
+                            Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -194,6 +223,7 @@ app.get("*", async (req,res, next)=>{
                         console.log(result);
                         if (err) {
                             console.error(err);
+Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -216,6 +246,7 @@ app.get("*", async (req,res, next)=>{
                         console.log(result);
                         if (err) {
                             console.error(err);
+Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -230,12 +261,42 @@ app.get("*", async (req,res, next)=>{
                     res.send("Not signed in.")
                 }
             }break;
+            case "api/pireps/all": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    const userPerms = new perms.Perm(pilot.permissions);
+                    if (userPerms.has("MANAGE_PIREP") || userPerms.has("SUPER_USER")) {
+                        db.pireps.get().then((result, err) => {
+                            console.log(result);
+                            if (err) {
+                                console.error(err);
+                                Sentry.captureException(err);
+                                res.statusMessage = "Error from VACenter, check server console.";
+                                res.sendStatus(500);
+                                res.send("Error from VACenter, check server console.");
+                            } else {
+                                res.json({
+                                    data: result.results
+                                })
+                            }
+                        });
+                    }else{
+                        res.status(403);
+                        res.send("No permissions");
+                    }
+                    
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            } break;
             case "api/aircraft/all": {
                 const pilot = await authenticate(req);
                 if (pilot) {
                     db.aircraft.get({}).then((result, err) => {
                         if (err) {
                             console.error(err);
+Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -258,6 +319,7 @@ app.get("*", async (req,res, next)=>{
                         db.webhooks.get({}).then((result, err) => {
                             if (err) {
                                 console.error(err);
+Sentry.captureException(err);
                                 res.statusMessage = "Error from VACenter, check server console.";
                                 res.sendStatus(500);
                                 res.send("Error from VACenter, check server console.");
@@ -296,6 +358,7 @@ app.get("*", async (req,res, next)=>{
                     db.users.get({}).then((result, err) => {
                         if (err) {
                             console.error(err);
+                            Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -378,6 +441,7 @@ app.post("*", async (req, res, next)=>{
                     }).then((result, err) =>{
                         if(err){
                             console.error(err);
+Sentry.captureException(err);
                             res.statusMessage = "Error from VACenter, check server console.";
                             res.sendStatus(500);
                             res.send("Error from VACenter, check server console.");
@@ -389,6 +453,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -836,6 +901,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if(err){
                                     console.error(err);
+Sentry.captureException(err);
                                     res.status(500);
                                     res.send("Internal Error");
                                 }else{
@@ -869,6 +935,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -912,6 +979,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -928,6 +996,54 @@ app.post("*", async (req, res, next)=>{
                     res.send("Need all fields.")
                 }
             } break;
+            case "api/pireps/update": {
+                const pilot = await authenticate(req);
+                if (pilot) {
+                    const userPerms = new perms.Perm(pilot.permissions);
+                    if (userPerms.has("MANAGE_PIREP") || userPerms.has("SUPER_USER")) {
+                        if (req.body.pirep && req.body.state) {
+                            db.pireps.get({ id: req.body.pirep }).then(async (result, err) => {
+                                console.log(result);
+                                if (err) {
+                                    console.error(err);
+                                    Sentry.captureException(err);
+                                    res.statusMessage = "Error from VACenter, check server console.";
+                                    res.sendStatus(500);
+                                    res.send("Error from VACenter, check server console.");
+                                } else {
+                                    const pirep = result.results[0];
+                                    pirep.state = parseInt(req.body.state)
+
+                                    await db.pireps.update({
+                                        fields: {
+                                            state: pirep.state,
+                                        },
+                                        where: {
+                                            field: "id",
+                                            operator: "=",
+                                            value: pirep.id
+                                        }
+                                    });
+
+                                    res.redirect(`/pirepArchive/view?id=${pirep.id}`);
+
+                                }
+                            });
+                        } else {
+                            res.status(400);
+                            res.send("missing values from body");
+                        }
+
+                    } else {
+                        res.status(403);
+                        res.send("No permissions");
+                    }
+
+                } else {
+                    res.status(401);
+                    res.send("Not signed in.")
+                }
+            } break;
             case "api/codeshare/new": {
                 if (req.body.operatorName && req.body.operatorCode) {
                     const pilot = await authenticate(req);
@@ -940,6 +1056,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -973,6 +1090,7 @@ app.post("*", async (req, res, next)=>{
                                 }).then((result, err) => {
                                     if (err) {
                                         console.error(err);
+Sentry.captureException(err);
                                         res.statusMessage = "Error from VACenter, check server console.";
                                         res.sendStatus(500);
                                         res.send("Error from VACenter, check server console.");
@@ -982,6 +1100,7 @@ app.post("*", async (req, res, next)=>{
                                 });
                             }catch(err){
                                 console.error(err);
+Sentry.captureException(err);
                                 res.statusMessage = "Error from VACenter, check server console.";
                                 res.sendStatus(500);
                                 res.send("Error from VACenter, check server console.");
@@ -1028,6 +1147,7 @@ app.post("*", async (req, res, next)=>{
                                     }).then((result, err) => {
                                         if (err) {
                                             console.error(err);
+Sentry.captureException(err);
                                             res.statusMessage = "Error from VACenter, check server console.";
                                             res.sendStatus(500);
                                             res.send("Error from VACenter, check server console.");
@@ -1072,6 +1192,7 @@ app.post("*", async (req, res, next)=>{
                                 }).then((result, err) => {
                                     if (err) {
                                         console.error(err);
+Sentry.captureException(err);
                                         res.statusMessage = "Error from VACenter, check server console.";
                                         res.sendStatus(500);
                                         res.send("Error from VACenter, check server console.");
@@ -1120,6 +1241,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1162,6 +1284,7 @@ app.post("*", async (req, res, next)=>{
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1265,6 +1388,7 @@ app.delete("*", async (req, res, next) => {
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1296,6 +1420,7 @@ app.delete("*", async (req, res, next) => {
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1327,6 +1452,7 @@ app.delete("*", async (req, res, next) => {
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1358,6 +1484,7 @@ app.delete("*", async (req, res, next) => {
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1389,6 +1516,7 @@ app.delete("*", async (req, res, next) => {
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1486,6 +1614,7 @@ app.delete("*", async (req, res, next) => {
                             }).then((result, err) => {
                                 if (err) {
                                     console.error(err);
+Sentry.captureException(err);
                                     res.statusMessage = "Error from VACenter, check server console.";
                                     res.sendStatus(500);
                                     res.send("Error from VACenter, check server console.");
@@ -1543,6 +1672,9 @@ app.get("*", async (req,res)=>{
             res.redirect("/resetPWD");
         }else{
             switch (req.path) {
+                case "/manualError": {
+                    throw new Error("Manual Error Test")
+                } break;
                 case "/":
                 case "/login":
                     if (user == null) {
@@ -1588,6 +1720,33 @@ app.get("*", async (req,res)=>{
                         res.render("archive", {
                             user: user
                         })
+                    }
+                    break;
+                case "/admin/pireps/view":
+                case "/pirepArchive/view":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        if (req.query.id) {
+                            if ((await db.pireps.get({ id: req.query.id })).results.length > 0) {
+                                const targetPIREP = (await db.pireps.get({ id: req.query.id }, true)).results[0];
+                                console.log(targetPIREP);
+                                let permissions = new perms.Perm(user.permissions);
+                                if(targetPIREP.pilot.pilotID == user.pilotID || permissions.has('MANAGE_PIREP')){
+                                    res.render("viewPIREP", {
+                                        user: user,
+                                        isManager: permissions.has('MANAGE_PIREP'),
+                                        pirep: targetPIREP
+                                    })
+                                }else{
+                                    res.sendStatus(404);
+                                }
+                            } else {
+                                res.sendStatus(404);
+                            }
+                        } else {
+                            res.sendStatus(400);
+                        }
                     }
                     break;
                 case "/newPIREP":
@@ -1701,6 +1860,27 @@ app.get("*", async (req,res)=>{
                         const userPerms = new perms.Perm(user.permissions);
                         if (userPerms.has("MANAGE_ROUTE") || userPerms.has("SUPER_USER")) {
                             res.render("admin/routes", {
+                                user: parsedUser,
+                                userPerms: userPerms,
+                                ranks: (await db.ranks.get({})).results,
+                                aircraft: (await db.aircraft.get({})).results
+                            })
+                        } else {
+                            if (user.permissions != 0) {
+                                res.redirect("/admin")
+                            } else {
+                                res.redirect("/");
+                            }
+                        }
+                    }
+                    break;
+                case "/admin/pirep":
+                    if (user == null) {
+                        res.redirect("/login");
+                    } else {
+                        const userPerms = new perms.Perm(user.permissions);
+                        if (userPerms.has("MANAGE_PIREP") || userPerms.has("SUPER_USER")) {
+                            res.render("admin/pireps", {
                                 user: parsedUser,
                                 userPerms: userPerms,
                                 ranks: (await db.ranks.get({})).results,
@@ -1913,6 +2093,7 @@ io.on('connection', (socket) => {
                                 }catch(err){
                                     sqlDownloadError = true;
                                     console.error(err);
+                                    Sentry.captureException(err);
                                 }
                                 if(sqlDownloadError == false){
                                     const SQL = await sqlFile.text();
@@ -1925,7 +2106,8 @@ io.on('connection', (socket) => {
                                             db.sql(query);
                                         }catch(err){
                                             SQLExecutionFailure = true;
-                                            console.error(err);        
+                                            console.error(err);
+                                            Sentry.captureException(err);        
                                         }
                                     });
                                     if(SQLExecutionFailure === false){
@@ -1954,6 +2136,16 @@ io.on('connection', (socket) => {
         } else {
             socket.emit("updateRes", [false, 'idk'])
         }
+    })
+});
+
+
+app.use(function onError(err, req, res, next) {
+    // The error id is attached to `res.sentry` to be returned
+    // and optionally displayed to the user for support.
+    res.statusCode = 500;
+    res.render("error", {
+        sentryCode: res.sentry
     })
 });
 

@@ -20,7 +20,6 @@
             <div id="wrapper"></div>
         </div>
         <%- include('components/scripts')%>
-            <script src="/public/scripts/progress.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
             <script>
@@ -47,13 +46,21 @@
                         server: {
                             url: '/api/routes/all',
                             then: data => data.data.map(route => {
-                                console.log(route);
-                                if(route.minHours <= parseFloat("<%= user.rank.minHours%>") ||  parseInt("<%= user.manualRank%>") == 1){
-                                    let aircraftNames = [];
-                                    route.aircrafts.forEach(craft =>{
-                                        aircraftNames.push(craft.liveryName + " - " + craft.aircraftName);
-                                    })
-                                    return [route.routeNumber, route.departureICAO, route.arrivalICAO, aircraftNames.join(", "), route.id]
+                                try{
+                                    console.log(route);
+                                    if (route.minHours <= parseFloat("<%= user.rank.minHours%>") || parseInt("<%= user.manualRank%>") == 1) {
+                                        let aircraftNames = [];
+                                        try{
+                                            route.aircrafts.forEach(craft => {
+                                                aircraftNames.push(craft.liveryName + " - " + craft.aircraftName);
+                                            })
+                                        }catch(err){
+                                            errorHandler(err);
+                                        }
+                                        return [route.routeNumber, route.departureICAO, route.arrivalICAO, aircraftNames.join(", "), route.id]
+                                    }
+                                }catch(err){
+                                    Sentry.captureException(err);
                                 }
                             })
                         },
@@ -84,7 +91,6 @@
                         }
                     }).render(document.getElementById("wrapper"));
             </script>
-
 </body>
 
 </html>

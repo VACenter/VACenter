@@ -208,18 +208,23 @@
                         server: {
                             url: '/api/pilots/all',
                             then: data => data.data.map(pilot =>{
-                                let flagsArray = [];
-                                if(pilot.revoked == 1){
-                                    flagsArray.push(gridjs.h("span", {
-                                        className: 'badge bg-danger m-1'
-                                    }, 'Revoked'));
+                                try{
+                                    let flagsArray = [];
+                                    if (pilot.revoked == 1) {
+                                        flagsArray.push(gridjs.h("span", {
+                                            className: 'badge bg-danger m-1'
+                                        }, 'Revoked'));
+                                    }
+                                    if (pilot.permissions > 0) {
+                                        flagsArray.push(gridjs.h("span", {
+                                            className: 'badge bg-primary m-1'
+                                        }, "Staff"))
+                                    }
+                                    return [pilot.callsign, pilot.name, pilot.rank.label, flagsArray.length > 0 ? flagsArray : gridjs.h("span", { className: "badge bg-primary" }, 'None '), pilot.pilotID, pilot.revoked == 0]
+                                }catch (err) {
+                                    Sentry.captureException(err);
                                 }
-                                if(pilot.permissions > 0){
-                                    flagsArray.push(gridjs.h("span", {
-                                        className: 'badge bg-primary m-1'
-                                    }, "Staff"))
-                                }
-                                return [pilot.callsign, pilot.name, pilot.rank.label, flagsArray.length > 0 ? flagsArray : gridjs.h("span", {className: "badge bg-primary"}, 'None ') , pilot.pilotID, pilot.revoked == 0]
+                                
                             })
                         },
                         search: {

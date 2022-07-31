@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adminstration | <%= config.vaInfo.name %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/4.1.5/css/flag-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <%- include('../components/head')%>
+</head>
+
+<body class="p-2 p-md-5 pt-4">
+    <%- include('../components/nav')%>
+        <%- include('../components/adminNav')%>
+
+            <div class="mt-5">
+                <h1 class="fw-bold">PIREPs</h1>
+                <div id="wrapper"></div>
+            </div>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
+                <script>
+                    function toHoursAndMinutes(totalMinutes) {
+                            const minutes = totalMinutes % 60;
+                            const hours = Math.floor(totalMinutes / 60);
+
+                            return `${padTo2Digits(hours)}:${padTo2Digits(minutes)}`;
+                        }
+
+                        function padTo2Digits(num) {
+                            return num.toString().padStart(2, '0');
+                        }
+
+                    (function () {
+                        'use strict'
+
+                        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                        var forms = document.querySelectorAll('.needs-validation')
+
+                        // Loop over them and prevent submission
+                        Array.prototype.slice.call(forms)
+                            .forEach(function (form) {
+                                form.addEventListener('submit', function (event) {
+                                    if (!form.checkValidity()) {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                    }
+
+                                    form.classList.add('was-validated')
+                                }, false)
+                            })
+                    })();
+
+                    const grid = new gridjs.Grid({
+                            columns: ['Flight', {
+                            name: 'Status',
+                            sort: {
+                                compare: (a, b) => {
+                                    let result = (a, b) => {
+                                        if (a.props.children == "Approved" && b.props.children == "Approved") {
+                                            console.log('1');
+                                            return 0;
+                                        } else if (a.props.children == "Approved" && b.props.children == "Awaiting Review") {
+                                            console.log('2');
+                                            return 1;
+                                        } else if (a.props.children == "Approved" && b.props.children == "Rejected") {
+                                            console.log('3');
+                                            return 1;
+                                        } else if (a.props.children == "Awaiting Review" && b.props.children == "Approved") {
+                                            console.log('4');
+                                            return -1;
+                                        } else if (a.props.children == "Awaiting Review" && b.props.children == "Awaiting Review") {
+                                            console.log('5');
+                                            return 0;
+                                        } else if (a.props.children == "Awaiting Review" && b.props.children == "Rejected") {
+                                            console.log('6');
+                                            return 1;
+                                        } else if (a.props.children == "Rejected" && b.props.children == "Approved") {
+                                            console.log('7');
+                                            return -1;
+                                        } else if (a.props.children == "Rejected" && b.props.children == "Awaiting Review") {
+                                            console.log('8');
+                                            return -1;
+                                        } else if (a.props.children == "Rejected" && b.props.children == "Rejected") {
+                                            console.log('9');
+                                            return 0;
+                                        } else {
+                                            console.log('10');
+                                            console.log(a);
+                                            console.log(b);
+                                            return 0;
+                                        }
+                                    }
+
+                                    console.log(result(a, b));
+                                    return result(a, b);
+                                }
+                            }
+                        }, 'Date', 'Pilot', {
+                                name: 'Actions',
+                                sort: { enabled: false },
+                                formatter: (cell, row) => {
+                                    return gridjs.h('a', {
+                                        className: 'btn btn-primary mx-2',
+                                        href: `/admin/pireps/view?id=${row.cells[4].data}`,
+                                    }, [gridjs.h("i", {
+                                        className: "d-none bi bi-arrow-right-circle-fill"
+                                    }), " View PIREP"]);
+                                }
+                            }, {
+                                name: "id",
+                                hidden: true
+                            }],
+                            server: {
+                                url: '/api/pireps/all',
+                                then: data => data.data.map(pirep => {
+                                    try{
+                                        console.log(pirep);
+                                        let status = gridjs.h("badge", {
+                                            className: `fs-6 badge bg-${pirep.state == 0 ? "secondary" : (pirep.state == 1 ? "success" : (pirep.state == 2 ? "danger" : "warning"))}`
+                                        }, pirep.state == 0 ? "Awaiting Review" : (pirep.state == 1 ? "Approved" : (pirep.state == 2 ? "Rejected" : "Unknown")))
+                                        return [pirep.flightNumber, status, new Date(pirep.flightDate).toDateString(), pirep.pilot.callsign, pirep.id]
+                                    }catch(err){
+                                        Sentry.captureException(err);
+                                    }
+                                })
+                            },
+                            search: {
+                                enabled: true
+                            },
+                            language: {
+                                'search': {
+                                    'placeholder': '🔍 Search...'
+                                }
+                            },
+                            style: {
+                                table: {
+                                    width: '100%'
+                                },
+                                td: {
+                                    overflowX: "scroll"
+                                }
+                            },
+                            className: {
+                                td: 'grid-td',
+                            },
+                            sort: true,
+                            pagination: {
+                                enabled: true,
+                                limit: 10,
+                                summary: true
+                            }
+                        }).render(document.getElementById("wrapper"));
+
+                    function deleteRoute(routeID) {
+                        const data = `routeID=${routeID}`;
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.withCredentials = true;
+
+                        xhr.addEventListener("readystatechange", function () {
+                            if (this.readyState === this.DONE) {
+                                if (this.status == 200) {
+                                    window.location.reload();
+                                } else {
+                                    alert("An error occured, see console");
+                                    console.error([this.status, this.statusText, this.responseText]);
+                                }
+                            }
+                        });
+
+                        xhr.open("DELETE", "/api/routes/delete");
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.send(data);
+                    }
+
+                    function deleteMulti(multiID) {
+                        console.log(multiID);
+                        const data = `multiID=${multiID}`;
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.withCredentials = true;
+
+                        xhr.addEventListener("readystatechange", function () {
+                            if (this.readyState === this.DONE) {
+                                if (this.status == 200) {
+                                    window.location.reload();
+                                } else {
+                                    alert("An error occured, see console");
+                                    console.error([this.status, this.statusText, this.responseText]);
+                                }
+                            }
+                        });
+
+                        xhr.open("DELETE", "/api/multi/delete");
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                        xhr.send(data);
+                    }
+                </script>
+                <%- include('../components/scripts')%>
+</body>
+
+</html>

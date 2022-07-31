@@ -1,5 +1,29 @@
+<script src="https://browser.sentry-cdn.com/7.8.0/bundle.min.js"
+    integrity="sha384-PVOy/EiuuBcf464HEXLzrIR872jZ4k78GhHPH9YhXiXR0/E/s1FTIOv1rlZ792HR"
+    crossorigin="anonymous"></script>
+
+<% if(config.instance.dev==false){%>
+    <script>
+        Sentry.init({
+            dsn: "https://4759520c48d94cc9bebaa2cd772a0721@o1309901.ingest.sentry.io/6556554",
+            beforeSend(event, hint) {
+                console.log(event)
+                // Check if it is an exception, and if so, show the report dialog
+                if (event.exception) {
+                    Sentry.showReportDialog({ eventId: event.event_id });
+                }
+                return event;
+            },
+        });
+    </script>
+    <%}%>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
     crossorigin="anonymous"></script>
 <script src="https://unpkg.com/sweetalert@2.1.2/dist/sweetalert.min.js"></script>
 <script src="/public/scripts/nav.js"></script>
+<script>
+    function errorHandler(err) {
+        throw new Error(err)
+    }
+</script>

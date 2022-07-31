@@ -18,7 +18,6 @@
             <h1 class="fw-bold"><i class="bi bi-file-post"></i> Past Flights</h1>
             <div id="wrapper"></div>
         </div>
-        <%- include('components/scripts')%>
             <script src="/public/scripts/progress.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/gridjs/plugins/selection/dist/selection.umd.js"></script>
@@ -86,7 +85,7 @@
                             formatter: (cell, row) => {
                                 return gridjs.h('a', {
                                     className: 'btn btn-primary mx-2',
-                                    href: `/viewPIREP?id=${row.cells[4].data}`,
+                                    href: `/pirepArchive/view?id=${row.cells[4].data}`,
                                 }, [gridjs.h("i", {
                                     className: "d-none bi bi-arrow-right-circle-fill"
                                 }), " View PIREP"]);
@@ -98,11 +97,15 @@
                         server: {
                             url: '/api/pireps/me',
                             then: data => data.data.map(pirep => {
-                                console.log(pirep);
-                                let status = gridjs.h("badge", {
-                                    className: `fs-6 badge bg-${pirep.state == 0 ? "secondary" : (pirep.state == 1 ? "success" : (pirep.state == 2 ? "danger" : "warning")) }`
-                                }, pirep.state == 0 ? "Awaiting Review" : (pirep.state == 1 ? "Approved" : (pirep.state == 2 ? "Rejected" : "Unknown")))
-                                return [pirep.flightNumber, status, new Date(pirep.flightDate).toDateString(), toHoursAndMinutes(pirep.flightTime), pirep.id]
+                                try{
+                                    console.log(pirep);
+                                    let status = gridjs.h("badge", {
+                                        className: `fs-6 badge bg-${pirep.state == 0 ? "secondary" : (pirep.state == 1 ? "success" : (pirep.state == 2 ? "danger" : "warning"))}`
+                                    }, pirep.state == 0 ? "Awaiting Review" : (pirep.state == 1 ? "Approved" : (pirep.state == 2 ? "Rejected" : "Unknown")))
+                                    return [pirep.flightNumber, status, new Date(pirep.flightDate).toDateString(), toHoursAndMinutes(pirep.flightTime), pirep.id]
+                                }catch (err) {
+                                    Sentry.captureException(err);
+                                }
                             })
                         },
                         search: {
@@ -132,6 +135,7 @@
                         }
                     }).render(document.getElementById("wrapper"));
             </script>
+                    <%- include('components/scripts')%>
 
 </body>
 
